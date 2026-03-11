@@ -1,0 +1,668 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+//////////////////////////////////////
+// ENUMS
+//////////////////////////////////////
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum Visibility {
+  PRIVATE
+  PUBLIC
+}
+
+enum FileStorageProvider {
+  LOCAL
+  S3
+  R2
+}
+
+enum EntityType {
+  PAPER
+  DATASET
+  EXPERIMENT
+  NOTE
+  PROJECT
+}
+
+enum WorkflowStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+
+enum ChatRole {
+  USER
+  ASSISTANT
+}
+
+//////////////////////////////////////
+// USERS
+//////////////////////////////////////
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  username     String   @unique
+  passwordHash String
+  role         UserRole @default(USER)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sessions Session[]
+
+  projects Project[]
+
+  projectMemberships ProjectMember[]
+
+  files File[]
+
+  collections Collection[]
+
+  notes PaperNote[]
+
+  activities UserActivity[]
+
+  searchHistory SearchHistory[]
+
+  chatSessions AIChatSession[]
+
+  auditLogs AuditLog[]
+}
+
+//////////////////////////////////////
+// AUTH SESSIONS
+//////////////////////////////////////
+
+model Session {
+  id           String @id @default(uuid())
+  userId       String
+  refreshToken String
+
+  ipAddress String?
+  userAgent String?
+
+  expiresAt DateTime
+  revoked   Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+//////////////////////////////////////
+// PROJECTS
+//////////////////////////////////////
+
+model Project {
+  id          String     @id @default(uuid())
+  ownerId     String
+  title       String
+  description String?
+  visibility  Visibility @default(PRIVATE)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  owner User @relation(fields: [ownerId], references: [id])
+
+  members ProjectMember[]
+
+  sections ProjectSection[]
+
+  datasets Dataset[]
+
+  references Reference[]
+
+  workflows WorkflowStage[]
+
+  workflowItems WorkflowItem[]
+
+  experiments Experiment[]
+
+  insights Insight[]
+
+  concepts ConceptNode[]
+
+  files File[]
+
+  paperNotes PaperNote[]
+}
+
+//////////////////////////////////////
+// PROJECT MEMBERS
+//////////////////////////////////////
+
+model ProjectMember {
+  id        String @id @default(uuid())
+  projectId String
+  userId    String
+  role      String
+
+  addedAt DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+
+  @@unique([projectId, userId])
+}
+
+//////////////////////////////////////
+// PROJECT SECTIONS
+//////////////////////////////////////
+
+model ProjectSection {
+  id        String @id @default(uuid())
+  projectId String
+  name      String
+  type      String
+  position  Int
+
+  createdAt DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id])
+}
+
+//////////////////////////////////////
+// FILE STORAGE
+//////////////////////////////////////
+
+model File {
+  id           String @id @default(uuid())
+  uploadedById String
+  projectId    String?
+
+  fileName     String
+  originalName String
+  mimeType     String
+  fileSize     Int
+
+  storageProvider FileStorageProvider @default(LOCAL)
+
+  storagePath String
+  url         String?
+
+  entityType EntityType
+  entityId   String?
+
+  checksum String?
+
+  metadata Json?
+
+  createdAt DateTime @default(now())
+
+  uploader User     @relation(fields: [uploadedById], references: [id])
+  project  Project? @relation(fields: [projectId], references: [id])
+
+  datasets Dataset[]
+
+  @@index([entityType, entityId])
+}
+
+//////////////////////////////////////
+// PAPERS
+//////////////////////////////////////
+
+model Paper {
+  id              String @id @default(uuid())
+  externalId      String?
+  source          String?
+  title           String
+  abstract        String?
+  publicationYear Int?
+  citationCount   Int?
+  doi             String?
+  url             String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  authors PaperAuthor[]
+
+  tags PaperTag[]
+
+  notes PaperNote[]
+
+  content PaperContent?
+
+  insights Insight[]
+
+  collections CollectionPaper[]
+}
+
+//////////////////////////////////////
+// AUTHORS
+//////////////////////////////////////
+
+model Author {
+  id          String @id @default(uuid())
+  name        String
+  affiliation String?
+  orcid       String?
+
+  papers PaperAuthor[]
+}
+
+model PaperAuthor {
+  paperId  String
+  authorId String
+
+  authorOrder Int?
+
+  paper  Paper  @relation(fields: [paperId], references: [id])
+  author Author @relation(fields: [authorId], references: [id])
+
+  @@id([paperId, authorId])
+}
+
+//////////////////////////////////////
+// PAPER CONTENT
+//////////////////////////////////////
+
+model PaperContent {
+  id       String @id @default(uuid())
+  paperId  String @unique
+  fullText String
+
+  extractionMethod String?
+
+  createdAt DateTime @default(now())
+
+  paper Paper @relation(fields: [paperId], references: [id])
+}
+
+//////////////////////////////////////
+// TAGS
+//////////////////////////////////////
+
+model Tag {
+  id   String @id @default(uuid())
+  name String @unique
+
+  papers PaperTag[]
+}
+
+model PaperTag {
+  paperId String
+  tagId   String
+
+  paper Paper @relation(fields: [paperId], references: [id])
+  tag   Tag   @relation(fields: [tagId], references: [id])
+
+  @@id([paperId, tagId])
+}
+
+//////////////////////////////////////
+// COLLECTIONS
+//////////////////////////////////////
+
+model Collection {
+  id          String @id @default(uuid())
+  userId      String
+  name        String
+  description String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  papers CollectionPaper[]
+}
+
+model CollectionPaper {
+  id           String @id @default(uuid())
+  collectionId String
+  paperId      String
+
+  addedAt DateTime @default(now())
+
+  collection Collection @relation(fields: [collectionId], references: [id])
+
+  paper Paper @relation(fields: [paperId], references: [id])
+}
+
+//////////////////////////////////////
+// NOTES
+//////////////////////////////////////
+
+model PaperNote {
+  id        String @id @default(uuid())
+  paperId   String
+  userId    String
+  projectId String?
+
+  content String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  paper   Paper   @relation(fields: [paperId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+  project Project? @relation(fields: [projectId], references: [id])
+}
+
+//////////////////////////////////////
+// DATASETS
+//////////////////////////////////////
+
+model Dataset {
+  id          String @id @default(uuid())
+  projectId   String
+  name        String
+  description String?
+
+  fileId String?
+
+  createdAt DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id])
+
+  file File? @relation(fields: [fileId], references: [id])
+}
+
+//////////////////////////////////////
+// REFERENCES
+//////////////////////////////////////
+
+model Reference {
+  id          String @id @default(uuid())
+  projectId   String
+  title       String
+  url         String?
+  description String?
+
+  type String?
+
+  createdAt DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id])
+}
+
+//////////////////////////////////////
+// WORKFLOW
+//////////////////////////////////////
+
+model WorkflowStage {
+  id        String @id @default(uuid())
+  projectId String
+
+  name     String
+  position Int
+
+  createdAt DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id])
+
+  items WorkflowItem[]
+}
+
+model WorkflowItem {
+  id        String @id @default(uuid())
+  stageId   String
+  projectId String
+
+  title       String
+  description String?
+
+  entityType EntityType
+  entityId   String?
+
+  status WorkflowStatus @default(TODO)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  stage   WorkflowStage @relation(fields: [stageId], references: [id])
+  project Project       @relation(fields: [projectId], references: [id])
+}
+
+//////////////////////////////////////
+// KNOWLEDGE GRAPH
+//////////////////////////////////////
+
+model ConceptNode {
+  id        String @id @default(uuid())
+  projectId String
+
+  type        String
+  title       String
+  description String?
+
+  createdAt DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id])
+
+  outgoing ConceptLink[] @relation("SourceNode")
+
+  incoming ConceptLink[] @relation("TargetNode")
+}
+
+model ConceptLink {
+  id String @id @default(uuid())
+
+  sourceNodeId String
+  targetNodeId String
+
+  relationshipType String
+
+  createdAt DateTime @default(now())
+
+  sourceNode ConceptNode @relation("SourceNode", fields: [sourceNodeId], references: [id])
+
+  targetNode ConceptNode @relation("TargetNode", fields: [targetNodeId], references: [id])
+}
+
+//////////////////////////////////////
+// EXPERIMENTS
+//////////////////////////////////////
+
+model Experiment {
+  id        String @id @default(uuid())
+  projectId String
+
+  title       String
+  objective   String?
+  methodology String?
+
+  status String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id])
+
+  iterations ExperimentIteration[]
+}
+
+model ExperimentIteration {
+  id           String @id @default(uuid())
+  experimentId String
+
+  iterationNumber Int
+
+  description String?
+
+  createdAt DateTime @default(now())
+
+  experiment Experiment @relation(fields: [experimentId], references: [id])
+
+  results ExperimentResult[]
+}
+
+model ExperimentResult {
+  id String @id @default(uuid())
+
+  experimentIterationId String
+
+  resultSummary String?
+
+  metrics Json?
+
+  createdAt DateTime @default(now())
+
+  iteration ExperimentIteration @relation(fields: [experimentIterationId], references: [id])
+}
+
+//////////////////////////////////////
+// INSIGHTS
+//////////////////////////////////////
+
+model Insight {
+  id        String @id @default(uuid())
+  projectId String
+
+  paperId       String?
+  conceptNodeId String?
+
+  content String
+
+  confidenceScore Float?
+
+  createdBy String?
+
+  createdAt DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id])
+
+  paper Paper? @relation(fields: [paperId], references: [id])
+}
+
+//////////////////////////////////////
+// AI CHAT
+//////////////////////////////////////
+
+model AIChatSession {
+  id String @id @default(uuid())
+
+  userId  String
+  paperId String?
+
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  messages AIChatMessage[]
+}
+
+model AIChatMessage {
+  id String @id @default(uuid())
+
+  sessionId String
+
+  role ChatRole
+
+  message String
+
+  tokensUsed Int?
+
+  createdAt DateTime @default(now())
+
+  session AIChatSession @relation(fields: [sessionId], references: [id])
+}
+
+//////////////////////////////////////
+// ACTIVITY
+//////////////////////////////////////
+
+model UserActivity {
+  id String @id @default(uuid())
+
+  userId String
+
+  activityType String
+
+  entityType String?
+  entityId   String?
+
+  metadata Json?
+
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+//////////////////////////////////////
+// SEARCH HISTORY
+//////////////////////////////////////
+
+model SearchHistory {
+  id String @id @default(uuid())
+
+  userId String
+
+  query String
+
+  filters Json?
+
+  resultCount Int?
+
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+//////////////////////////////////////
+// LOGGING
+//////////////////////////////////////
+
+model AuditLog {
+  id String @id @default(uuid())
+
+  userId String?
+
+  action String
+
+  entityType String?
+  entityId   String?
+
+  metadata Json?
+
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+}
+
+model ApiLog {
+  id String @id @default(uuid())
+
+  endpoint String
+
+  method String
+
+  statusCode Int
+
+  latencyMs Int?
+
+  ipAddress String?
+
+  createdAt DateTime @default(now())
+}
+
+model AILog {
+  id String @id @default(uuid())
+
+  userId String?
+
+  operation String
+
+  model String?
+
+  tokensUsed Int?
+
+  cost Float?
+
+  createdAt DateTime @default(now())
+}
