@@ -1,23 +1,44 @@
-const projectRepository = require("../repositories/projectRepository")
+const prisma = require("../config/prisma");
 
 const createProject = async (data) => {
 
- const { title, description } = data
+  const { ownerId, title, description } = data;
 
- if (!title) {
-  throw new Error("Title required")
- }
+  return prisma.project.create({
+    data: {
+      ownerId,
+      title,
+      description
+    }
+  });
 
- return projectRepository.createProject(title, description)
-}
+};
 
 const getProjects = async () => {
 
- return projectRepository.getProjects()
+  return prisma.project.findMany({
+    include: {
+      owner: true
+    }
+  });
 
-}
+};
+
+const getProjectById = async (id) => {
+
+  return prisma.project.findUnique({
+    where: { id },
+    include: {
+      sections: true,
+      datasets: true,
+      references: true
+    }
+  });
+
+};
 
 module.exports = {
- createProject,
- getProjects
-}
+  createProject,
+  getProjects,
+  getProjectById
+};

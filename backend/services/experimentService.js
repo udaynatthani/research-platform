@@ -1,25 +1,67 @@
-const experimentRepository = require("../repositories/experimentRepository");
+const prisma = require("../config/prisma");
 
 const createExperiment = async (data) => {
-  const { objective, methodology, result, projectId } = data;
 
-  if (!objective) {
-    throw new Error("Experiment objective is required");
-  }
+  const { projectId, title, objective, methodology, status } = data;
 
-  return await experimentRepository.createExperiment(
-    objective,
-    methodology,
-    result,
-    projectId
-  );
+  return prisma.experiment.create({
+    data: {
+      projectId,
+      title,
+      objective,
+      methodology,
+      status
+    }
+  });
+
 };
 
-const getExperiments = async () => {
-  return await experimentRepository.getExperiments();
+const getExperiments = async (projectId) => {
+
+  return prisma.experiment.findMany({
+    where: { projectId },
+    include: {
+      iterations: {
+        include: {
+          results: true
+        }
+      }
+    }
+  });
+
+};
+
+const createIteration = async (data) => {
+
+  const { experimentId, iterationNumber, description } = data;
+
+  return prisma.experimentIteration.create({
+    data: {
+      experimentId,
+      iterationNumber,
+      description
+    }
+  });
+
+};
+
+const addResult = async (data) => {
+
+  const { experimentIterationId, resultSummary, metrics } = data;
+
+  return prisma.experimentResult.create({
+    data: {
+      experimentIterationId,
+      resultSummary,
+      metrics
+    }
+  });
+
 };
 
 module.exports = {
   createExperiment,
-  getExperiments
+  getExperiments,
+  createIteration,
+  addResult
 };

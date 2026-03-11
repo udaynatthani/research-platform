@@ -1,24 +1,45 @@
-const insightRepository = require("../repositories/insightRepository");
+const prisma = require("../config/prisma");
 
 const createInsight = async (data) => {
-  const { title, description, projectId } = data;
 
-  if (!title) {
-    throw new Error("Insight title is required");
-  }
+  const { projectId, content, paperId, conceptNodeId } = data;
 
-  return await insightRepository.createInsight(
-    title,
-    description,
-    projectId
-  );
+  return prisma.insight.create({
+    data: {
+      projectId,
+      content,
+      paperId,
+      conceptNodeId
+    }
+  });
+
 };
 
-const getInsights = async () => {
-  return await insightRepository.getInsights();
+const getInsightsByProject = async (projectId) => {
+
+  return prisma.insight.findMany({
+    where: { projectId },
+    include: {
+      paper: true
+    }
+  });
+
+};
+
+const getInsightLineage = async (id) => {
+
+  return prisma.insight.findUnique({
+    where: { id },
+    include: {
+      paper: true,
+      project: true
+    }
+  });
+
 };
 
 module.exports = {
   createInsight,
-  getInsights
+  getInsightsByProject,
+  getInsightLineage
 };

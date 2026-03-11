@@ -1,17 +1,23 @@
-const paperRepository = require("../repositories/paperRepository");
+const prisma = require("../config/prisma");
 
 const createPaper = async (data) => {
-  const { title, summary, projectId } = data;
 
-  if (!title) {
-    throw new Error("Paper title is required");
-  }
+  return prisma.paper.create({
+    data
+  });
 
-  return await paperRepository.createPaper(title, summary, projectId);
 };
 
 const getPapers = async () => {
-  return await paperRepository.getPapers();
+
+  return prisma.paper.findMany({
+    include: {
+      authors: true,
+      tags: true,
+      notes: true
+    }
+  });
+
 };
 
 module.exports = {
