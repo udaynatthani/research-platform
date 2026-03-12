@@ -1,37 +1,54 @@
-import { useEffect, useState } from "react";
+import { useEffect,useState } from "react";
 import API from "../services/api";
+import Navbar from "../components/Navbar";
 import ProjectCard from "../components/ProjectCard";
 
-export default function Dashboard() {
+export default function Dashboard(){
 
-  const [projects, setProjects] = useState([]);
+ const [projects,setProjects]=useState([]);
 
-  useEffect(() => {
+ useEffect(()=>{
 
-    API.get("/projects")
-      .then(res => setProjects(res.data));
+  API.get("/projects")
+  .then(res=>setProjects(res.data));
 
-  }, []);
+ },[]);
 
-  return (
+ const createProject=async()=>{
 
-    <div className="p-6">
+  const title=prompt("Project title");
 
-      <h1 className="text-2xl font-bold mb-6">
-        Research Projects
-      </h1>
+  const res=await API.post("/projects",{
+   title
+  });
 
-      <div className="grid grid-cols-3 gap-4">
+  setProjects([...projects,res.data]);
 
-        {projects.map(project => (
-          <ProjectCard
-            key={project.id}
-            project={project}
-          />
-        ))}
+ };
 
-      </div>
+ return(
 
-    </div>
-  );
+ <div>
+
+ <Navbar/>
+
+ <div className="p-6">
+
+ <button
+ onClick={createProject}
+ className="bg-green-500 text-white px-4 py-2 mb-4"
+ >
+ Create Project
+ </button>
+
+ {projects.map(p=>(
+   <ProjectCard key={p.id} project={p}/>
+ ))}
+
+ </div>
+
+ </div>
+
+ );
+
 }

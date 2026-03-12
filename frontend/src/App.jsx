@@ -1,21 +1,24 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-import Navbar from "./components/Navbar";
 import Dashboard from "./pages/Dashboard";
+import Experiments from "./pages/Experiments";
 import Project from "./pages/Project";
+import Login from "./pages/Login";
+import Register from "./pages/Register"; // ✅ ADD THIS
 
-function App() {
+export default function App() {
 
   return (
 
     <BrowserRouter>
 
-      <Navbar />
-
       <Routes>
 
-        <Route path="/" element={<Dashboard />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
 
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/experiments" element={<Experiments />} />
         <Route path="/project/:id" element={<Project />} />
 
       </Routes>
@@ -23,6 +26,5 @@ function App() {
     </BrowserRouter>
 
   );
-}
 
-export default App;
+}

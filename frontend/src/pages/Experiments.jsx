@@ -1,41 +1,97 @@
 import { useEffect, useState } from "react";
 import API from "../services/api";
+import Navbar from "../components/Navbar";
 
-export default function Experiments({ projectId }) {
+export default function Experiments(){
 
-  const [experiments, setExperiments] = useState([]);
+ const [experiments,setExperiments] = useState([]);
+ const [title,setTitle] = useState("");
+ const [objective,setObjective] = useState("");
+ const [methodology,setMethodology] = useState("");
 
-  useEffect(() => {
+ const projectId = localStorage.getItem("currentProject");
 
-    API.get(`/experiments/${projectId}`)
-      .then(res => setExperiments(res.data));
+ useEffect(()=>{
 
-  }, [projectId]);
+  if(!projectId) return;
 
-  return (
+  API.get(`/experiments?projectId=${projectId}`)
+  .then(res => setExperiments(res.data));
 
-    <div className="p-6">
+ },[projectId]);
 
-      <h1 className="text-xl font-bold mb-4">
-        Experiments
-      </h1>
+ const createExperiment = async (e) => {
 
-      {experiments.map(exp => (
+  e.preventDefault();
 
-        <div key={exp.id} className="border p-4 mb-3 rounded">
+  const res = await API.post("/experiments",{
+    projectId,
+    title,
+    objective,
+    methodology
+  });
 
-          <h2 className="font-semibold">
-            {exp.title}
-          </h2>
+  setExperiments([...experiments,res.data]);
 
-          <p>
-            {exp.objective}
-          </p>
+  setTitle("");
+  setObjective("");
+  setMethodology("");
 
-        </div>
+ };
 
-      ))}
+ return(
 
-    </div>
-  );
+ <div>
+
+ <Navbar/>
+
+ <div className="p-6">
+
+ <h1 className="text-2xl mb-4">Experiments</h1>
+
+ <form onSubmit={createExperiment} className="flex flex-col gap-3 mb-6">
+
+ <input
+ placeholder="Experiment Title"
+ value={title}
+ onChange={(e)=>setTitle(e.target.value)}
+ className="border p-2"
+ />
+
+ <input
+ placeholder="Objective"
+ value={objective}
+ onChange={(e)=>setObjective(e.target.value)}
+ className="border p-2"
+ />
+
+ <textarea
+ placeholder="Methodology"
+ value={methodology}
+ onChange={(e)=>setMethodology(e.target.value)}
+ className="border p-2"
+ />
+
+ <button className="bg-blue-500 text-white p-2">
+ Create Experiment
+ </button>
+
+ </form>
+
+ {experiments.map(exp=>(
+ <div key={exp.id} className="border p-3 mb-3">
+
+ <h2 className="font-bold">{exp.title}</h2>
+ <p>{exp.objective}</p>
+ <p className="text-sm text-gray-500">{exp.methodology}</p>
+
+ </div>
+ ))}
+
+ </div>
+
+ </div>
+
+ );
+
 }

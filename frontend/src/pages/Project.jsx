@@ -1,23 +1,51 @@
+import { useEffect,useState } from "react";
 import { useParams } from "react-router-dom";
-import WorkflowBoard from "../components/WorkflowBoard";
+import API from "../services/api";
+
 import ConceptGraph from "../components/ConceptGraph";
 
-export default function Project() {
+export default function Project(){
 
-  const { id } = useParams();
+ const {id}=useParams();
 
-  return (
+ const [concepts,setConcepts]=useState([]);
 
-    <div className="p-6">
+ useEffect(()=>{
 
-      <h1 className="text-2xl font-bold mb-6">
-        Project Overview
-      </h1>
+  API.get(`/visualization/concept-graph/${id}`)
+  .then(res=>setConcepts(res.data));
 
-      <WorkflowBoard projectId={id} />
+ },[id]);
 
-      <ConceptGraph projectId={id} />
+ const addConcept=async()=>{
 
-    </div>
-  );
+  const title=prompt("Concept title");
+
+  await API.post("/concepts",{
+   projectId:id,
+   type:"CONCEPT",
+   title
+  });
+
+  window.location.reload();
+
+ };
+
+ return(
+
+ <div className="p-6">
+
+ <button
+ onClick={addConcept}
+ className="bg-blue-500 text-white px-4 py-2"
+ >
+ Add Concept
+ </button>
+
+ <ConceptGraph projectId={id}/>
+
+ </div>
+
+ );
+
 }
