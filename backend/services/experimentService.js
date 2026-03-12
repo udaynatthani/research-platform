@@ -24,19 +24,18 @@ const createExperiment = async (data) => {
 
 };
 
-const getExperiments = async (projectId) => {
+const getExperiments = async (projectId,userId) => {
 
   if (!projectId) {
     throw new Error("projectId is required");
   }
 
+ 
   return prisma.experiment.findMany({
-    where: { projectId },
-    include: {
-      iterations: {
-        include: {
-          results: true
-        }
+    where: {
+      projectId,
+      project: {
+        ownerId: userId
       }
     }
   });

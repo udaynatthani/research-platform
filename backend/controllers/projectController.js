@@ -8,7 +8,10 @@ const createProject = async (req, res) => {
       ownerId: req.user.userId
     };
 
-    const project = await projectService.createProject(data);
+    const project = await projectService.createProject(
+      req.body,
+      req.user.userId
+    );
 
     res.status(201).json(project);
 
@@ -21,9 +24,17 @@ const createProject = async (req, res) => {
 
 const getProjects = async (req, res) => {
 
-  const projects = await projectService.getProjects();
+  try {
 
-  res.json(projects);
+    const projects = await projectService.getProjects(req.user.userId);
+
+    res.json(projects);
+
+  } catch (error) {
+
+    res.status(500).json({ error: error.message });
+
+  }
 
 };
 
