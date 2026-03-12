@@ -29,14 +29,21 @@ class RecommendationService:
 
             for distance, metadata in results:
 
-                similarity = 1 - distance
+                similarity = float(max(0, 1 / (1 + distance)))
                 paper_id = metadata.get("paper_id")
+                title = metadata.get("title", "Unknown")
+                text_preview = metadata.get("text", "")[:200]
 
                 if not paper_id:
-                    continue
+                    # If no paper_id in metadata, use text hash as fallback
+                    paper_id = str(hash(metadata.get("text", "")))
 
                 paper_scores[paper_id].append(similarity)
-                paper_metadata[paper_id] = metadata
+                paper_metadata[paper_id] = {
+                    "paper_id": paper_id,
+                    "title": title,
+                    "text_preview": text_preview
+                }
 
         recommendations = []
 
@@ -49,6 +56,7 @@ class RecommendationService:
             recommendations.append({
                 "paper_id": paper_id,
                 "title": meta.get("title"),
+                "text_preview": meta.get("text_preview"),
                 "similarity_score": float(avg_score)
             })
 

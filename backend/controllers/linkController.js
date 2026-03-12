@@ -12,8 +12,17 @@ const createLink = async (req, res) => {
 
 const getLinks = async (req, res) => {
   try {
-    const links = await linkService.getLinks();
+    const links = await linkService.getLinksByProject(req.params.projectId);
     res.json(links);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const deleteLink = async (req, res) => {
+  try {
+    await linkService.deleteLink(req.params.id);
+    res.json({ message: "Link deleted" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -21,5 +30,6 @@ const getLinks = async (req, res) => {
 
 module.exports = {
   createLink,
-  getLinks
+  getLinks,
+  deleteLink
 };

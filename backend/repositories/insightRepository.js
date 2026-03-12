@@ -1,25 +1,36 @@
-const pool = require("../config/db");
+const prisma = require("../config/prisma");
 
-const createInsight = async (title, description, projectId) => {
-
- const result = await pool.query(
-  "INSERT INTO insights(title, description, project_id) VALUES($1,$2,$3) RETURNING *",
-  [title, description, projectId]
- );
-
- return result.rows[0];
+const createInsight = async (data) => {
+  return prisma.insight.create({ data });
 };
 
-const getInsights = async () => {
+const getInsightsByProject = async (projectId) => {
+  return prisma.insight.findMany({
+    where: { projectId },
+    include: { paper: true },
+    orderBy: { createdAt: "desc" }
+  });
+};
 
- const result = await pool.query(
-  "SELECT * FROM insights ORDER BY created_at DESC"
- );
+const getInsightById = async (id) => {
+  return prisma.insight.findUnique({
+    where: { id },
+    include: {
+      paper: true,
+      project: true
+    }
+  });
+};
 
- return result.rows;
+const deleteInsight = async (id) => {
+  return prisma.insight.delete({
+    where: { id }
+  });
 };
 
 module.exports = {
- createInsight,
- getInsights
+  createInsight,
+  getInsightsByProject,
+  getInsightById,
+  deleteInsight
 };

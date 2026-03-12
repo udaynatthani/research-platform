@@ -28,8 +28,11 @@ const getConceptsByProject = async (projectId) => {
 };
 
 const linkConcepts = async (data) => {
+  const { sourceNodeId, targetNodeId, relationshipType } = data || {};
 
-  const { sourceNodeId, targetNodeId, relationshipType } = data;
+  if (!sourceNodeId || !targetNodeId || !relationshipType) {
+    throw new Error("sourceNodeId, targetNodeId, and relationshipType are required");
+  }
 
   return prisma.conceptLink.create({
     data: {
@@ -38,7 +41,6 @@ const linkConcepts = async (data) => {
       relationshipType
     }
   });
-
 };
 
 module.exports = {

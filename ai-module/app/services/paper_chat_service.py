@@ -11,27 +11,32 @@ class PaperChatService:
         self.embedder = EmbeddingModel
         self.generator = ModelRegistry.get_insight_model()
 
-    def index_paper(self, paper_text: str):
+    def index_paper(self, paper_id: str, paper_text: str):
         """
-        Index a paper for retrieval.
+        Index a paper for retrieval, associated with a specific paper_id.
         """
 
         chunks = chunk_document(paper_text)
 
         embeddings = self.embedder.embed_batch(chunks)
 
-        metadata = [{"text": chunk} for chunk in chunks]
+        metadata = [{"text": chunk, "paper_id": paper_id} for chunk in chunks]
 
         self.vector_store.add_embeddings(embeddings, metadata)
 
-    def answer_question(self, question: str):
+    def answer_question(self, question: str, paper_id: str = None):
         """
-        Answer questions about the indexed paper.
+        Answer questions about the indexed paper(s).
+        Optional: filter by paper_id.
         """
 
         query_vector = self.embedder.embed_text(question)
 
-        results = self.vector_store.search(query_vector, k=5)
+        results = self.vector_store.search(query_vector, k=5, paper_id=paper_id)
+        
+        if not results:
+            return "No relevant information found in the document(s)."
+
         context = "\n\n".join(
             list({r[1]["text"] for r in results})
         )
@@ -40,27 +45,9 @@ class PaperChatService:
         prompt = f"""
         You are an intelligent AI research assistant.
 
-        Your job is to help a user understand a research paper in very simple and clear language.
+        Your job is to help a user understand research papers in very simple and clear language.
 
-        The user might not be an expert, so you must explain things in an easy-to-understand way, like explaining to a beginner or a curious student.
-
-        IMPORTANT RULES:
-
-        1. Use ONLY the information provided in the context below.
-        2. Do NOT invent information that is not present in the context.
-        3. If the context does not contain the answer, say:
-           "The paper does not provide this information."
-        4. Use simple and clear language.
-        5. Avoid technical jargon when possible.
-        6. If technical terms appear in the context, briefly explain them.
-        7. Answer in 2–4 sentences maximum.
-        8. Focus on the main idea rather than copying sentences from the context.
-
-        Your explanation should feel like a teacher explaining a concept to a beginner.
-
-        -------------------------------------
-
-        CONTEXT FROM THE PAPER:
+        CONTEXT FROM THE PAPERS:
 
         {context}
 
@@ -72,7 +59,7 @@ class PaperChatService:
 
         -------------------------------------
 
-        Now explain the answer clearly and simply:
+        Now explain the answer clearly and simply using only the provided context. Answer in 2–4 sentences:
         """
 
         result = self.generator(

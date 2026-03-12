@@ -2,27 +2,45 @@ const prisma = require("../config/prisma");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
+/**
+ * User Service
+ * Handles user creation, authentication, and retrieval.
+ */
+
 const createUser = async (data) => {
   const { email, username, password } = data;
 
-  if (!email || !username || !password) {
-    throw new Error("email, username and password are required");
+  // Additional check for existing user (though DB constraint handles this)
+  const existingUser = await prisma.user.findFirst({
+    where: {
+      OR: [
+        { email },
+        { username }
+      ]
+    }
+  });
+
+  if (existingUser) {
+    const field = existingUser.email === email ? "Email" : "Username";
+    throw new Error(`${field} already exists`);
   }
 
-  const passwordHash = await bcrypt.hash(password, 10);
+  const passwordHash = await bcrypt.hash(password, 12); // Slightly higher rounds for security
 
   const user = await prisma.user.create({
     data: {
       email,
       username,
-      passwordHash
+      passwordHash,
+      role: "USER" // Default role
     }
   });
 
   return {
     id: user.id,
     email: user.email,
-    username: user.username
+    username: user.username,
+    role: user.role
   };
 };
 
@@ -33,16 +51,20 @@ const loginUser = async (data) => {
     where: { email }
   });
 
-  if (!user) throw new Error("User not found");
+  if (!user) {
+    throw new Error("Invalid email or password"); // Generic message for security
+  }
 
   const valid = await bcrypt.compare(password, user.passwordHash);
 
-  if (!valid) throw new Error("Invalid password");
+  if (!valid) {
+    throw new Error("Invalid email or password"); // Generic message for security
+  }
 
   const token = jwt.sign(
-    { userId: user.id },
+    { userId: user.id, role: user.role },
     process.env.JWT_SECRET,
-    { expiresIn: "7d" }
+    { expiresIn: "1h" } // Shorter lifespan for tokens, usage of refresh tokens instead
   );
 
   return {
@@ -50,7 +72,8 @@ const loginUser = async (data) => {
     user: {
       id: user.id,
       email: user.email,
-      username: user.username
+      username: user.username,
+      role: user.role
     }
   };
 };
@@ -60,7 +83,22 @@ const getUsers = async () => {
     select: {
       id: true,
       email: true,
-      username: true
+      username: true,
+      role: true,
+      createdAt: true
+    }
+  });
+};
+
+const getUserById = async (id) => {
+  return prisma.user.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      email: true,
+      username: true,
+      role: true,
+      createdAt: true
     }
   });
 };
@@ -68,5 +106,6 @@ const getUsers = async () => {
 module.exports = {
   createUser,
   loginUser,
-  getUsers
+  getUsers,
+  getUserById
 };

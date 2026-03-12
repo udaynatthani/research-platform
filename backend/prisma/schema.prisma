@@ -61,6 +61,7 @@ model Project {
   references    Reference[]
   workflowItems WorkflowItem[]
   workflows     WorkflowStage[]
+  entityLinks   EntityLink[]
 }
 
 model ProjectMember {
@@ -283,6 +284,7 @@ model Experiment {
   updatedAt   DateTime              @updatedAt
   project     Project               @relation(fields: [projectId], references: [id])
   iterations  ExperimentIteration[]
+  insights    Insight[]
 }
 
 model ExperimentIteration {
@@ -308,12 +310,14 @@ model Insight {
   id              String   @id @default(uuid())
   projectId       String
   paperId         String?
+  experimentId    String?
   conceptNodeId   String?
   content         String
   confidenceScore Float?
   createdBy       String?
   createdAt       DateTime @default(now())
   paper           Paper?   @relation(fields: [paperId], references: [id])
+  experiment      Experiment? @relation(fields: [experimentId], references: [id])
   project         Project  @relation(fields: [projectId], references: [id])
 }
 
@@ -334,6 +338,23 @@ model AIChatMessage {
   tokensUsed Int?
   createdAt  DateTime      @default(now())
   session    AIChatSession @relation(fields: [sessionId], references: [id])
+}
+
+model EntityLink {
+  id               String   @id @default(uuid())
+  projectId        String
+  sourceType       String   // e.g., 'PAPER', 'EXPERIMENT'
+  sourceId         String
+  targetType       String
+  targetId         String
+  relationshipType String
+  description      String?
+  createdAt        DateTime @default(now())
+  project          Project  @relation(fields: [projectId], references: [id])
+
+  @@index([projectId])
+  @@index([sourceId])
+  @@index([targetId])
 }
 
 model UserActivity {
@@ -388,31 +409,7 @@ model AILog {
   createdAt  DateTime @default(now())
 }
 
-model project_sections {
-  id           Int       @id @default(autoincrement())
-  project_id   Int?
-  section_name String
-  created_at   DateTime? @default(now()) @db.Timestamp(6)
-  projects     projects? @relation(fields: [project_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-}
 
-model projects {
-  id               Int                @id @default(autoincrement())
-  title            String
-  description      String?
-  owner_id         Int?
-  created_at       DateTime?          @default(now()) @db.Timestamp(6)
-  project_sections project_sections[]
-  users            users?             @relation(fields: [owner_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-}
-
-model users {
-  id         Int        @id @default(autoincrement())
-  name       String
-  email      String     @unique
-  created_at DateTime?  @default(now()) @db.Timestamp(6)
-  projects   projects[]
-}
 
 enum UserRole {
   USER

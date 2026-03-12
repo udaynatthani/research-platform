@@ -24,7 +24,8 @@ class PlagiarismService:
 
             for distance, metadata in results:
 
-                similarity = 1 - distance
+                # Use bounded similarity: 1/(1+distance) maps L2 distance to [0, 1]
+                similarity = float(1 / (1 + distance))
 
                 similarity_scores.append(similarity)
 
@@ -33,7 +34,7 @@ class PlagiarismService:
                     matches.append({
                         "text": chunks[i],
                         "matched_text": metadata["text"],
-                        "similarity": float(similarity)
+                        "similarity": similarity
                     })
 
         if len(similarity_scores) == 0:

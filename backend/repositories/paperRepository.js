@@ -1,25 +1,65 @@
-const pool = require("../config/db");
+const prisma = require("../config/prisma");
 
-const createPaper = async (title, summary, projectId) => {
-
- const result = await pool.query(
-  "INSERT INTO papers(title, summary, project_id) VALUES($1,$2,$3) RETURNING *",
-  [title, summary, projectId]
- );
-
- return result.rows[0];
+const createPaper = async (data) => {
+  return prisma.paper.create({ data });
 };
 
 const getPapers = async () => {
+  return prisma.paper.findMany({
+    include: {
+      authors: {
+        include: { author: true }
+      }
+    },
+    orderBy: { createdAt: "desc" }
+  });
+};
 
- const result = await pool.query(
-  "SELECT * FROM papers ORDER BY created_at DESC"
- );
+const getPaperById = async (id) => {
+  return prisma.paper.findUnique({
+    where: { id },
+    include: {
+      authors: {
+        include: { author: true },
+        orderBy: { authorOrder: "asc" }
+      },
+      tags: {
+        include: { tag: true }
+      },
+      content: true,
+      notes: true,
+      insights: true
+    }
+  });
+};
 
- return result.rows;
+const searchPapers = async (query) => {
+  return prisma.paper.findMany({
+    where: {
+      OR: [
+        { title: { contains: query, mode: "insensitive" } },
+        { abstract: { contains: query, mode: "insensitive" } }
+      ]
+    },
+    include: {
+      authors: {
+        include: { author: true }
+      }
+    },
+    orderBy: { createdAt: "desc" }
+  });
+};
+
+const deletePaper = async (id) => {
+  return prisma.paper.delete({
+    where: { id }
+  });
 };
 
 module.exports = {
- createPaper,
- getPapers
+  createPaper,
+  getPapers,
+  getPaperById,
+  searchPapers,
+  deletePaper
 };

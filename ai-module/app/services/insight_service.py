@@ -1,32 +1,35 @@
 from app.models.model_registry import ModelRegistry
-from transformers import pipeline
 from app.core.chunking import chunk_document
+
 
 class InsightExtractor:
 
     def __init__(self):
         self.extractor = ModelRegistry.get_insight_model()
 
-    def extract_chunk_insights(self, text: str) -> str:
+    def extract_insights(self, paper_text: str) -> str:
         """
-        Extract insights from a single chunk.
+        Extract key research insights from relevant parts of the paper.
+        Focuses on the introduction/abstract (first 2000 chars) for high density of insights.
         """
+        
+        # Only process the first part to keep things snappy and accurate
+        context = paper_text[:2500]
 
         prompt = f"""
-Extract the following research information from the text.
-
-Return concise bullet points for:
-
-- Problem Statement
-- Research Gap
-- Methodology
-- Datasets Used
-- Evaluation Metrics
-- Key Findings
-
-Text:
-{text}
-"""
+        Extract the following research information based ONLY on the provided text.
+        
+        TEXT:
+        {context}
+        
+        Provide concise research highlights covering:
+        - Main problem being solved
+        - Key methodology or approach
+        - Primary findings or results
+        - Research gap identified
+        
+        Answer with 3-5 clear bullet points.
+        """
 
         result = self.extractor(
             prompt,
@@ -36,18 +39,3 @@ Text:
         )
 
         return result[0]["generated_text"]
-
-    def extract_insights(self, paper_text: str):
-        """
-        Extract insights from the full research paper.
-        """
-
-        chunks = chunk_document(paper_text)
-
-        insights = []
-
-        for chunk in chunks:
-            extracted = self.extract_chunk_insights(chunk)
-            insights.append(extracted)
-
-        return "\n".join(insights)

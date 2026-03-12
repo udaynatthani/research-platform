@@ -1,0 +1,430 @@
+{
+  "info": {
+    "name": "Research Platform API",
+    "_postman_id": "00000000-0000-0000-0000-000000000000",
+    "description": "Collection for manual testing of all backend endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:5000" },
+    { "key": "auth_token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"test@example.com\",\n  \"username\": \"testuser\",\n  \"password\": \"secret\"\n}" },
+            "url": { "raw": "{{base_url}}/users/register", "host": ["{{base_url}}"], "path": ["users","register"] }
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"secret\"\n}" },
+            "url": { "raw": "{{base_url}}/users/login", "host": ["{{base_url}}"], "path": ["users","login"] }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": { "mode": "raw", "raw": "{\n  \"token\": \"<refresh-token>\"\n}" },
+            "url": { "raw": "{{base_url}}/users/refresh-token", "host": ["{{base_url}}"], "path": ["users","refresh-token"] }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}" },
+            "url": { "raw": "{{base_url}}/users/logout", "host": ["{{base_url}}"], "path": ["users","logout"] }
+          }
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/users/me", "host": ["{{base_url}}"], "path": ["users","me"] }
+          }
+        },
+        {
+          "name": "List Users (admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/users", "host": ["{{base_url}}"], "path": ["users"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Projects",
+      "item": [
+        {
+          "name": "Create Project",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"New Project\",\n  \"description\": \"A test project\",\n  \"visibility\": \"PRIVATE\"\n}" },
+            "url": { "raw": "{{base_url}}/projects", "host": ["{{base_url}}"], "path": ["projects"] }
+          }
+        },
+        {
+          "name": "Get Projects",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/projects", "host": ["{{base_url}}"], "path": ["projects"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Papers",
+      "item": [
+        {
+          "name": "Search Papers",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/papers/search?query=deep", "host": ["{{base_url}}"], "path": ["papers","search"], "query": [{"key":"query","value":"deep"}] }
+          }
+        },
+        {
+          "name": "Get Paper By ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/papers/{{paperId}}", "host": ["{{base_url}}"], "path": ["papers","{{paperId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Datasets",
+      "item": [
+        {
+          "name": "Create Dataset",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"My Data\",\n  \"type\": \"CSV\",\n  \"projectId\": \"{{projectId}}\"\n}" },
+            "url": { "raw": "{{base_url}}/datasets", "host": ["{{base_url}}"], "path": ["datasets"] }
+          }
+        },
+        {
+          "name": "Get Datasets",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/datasets", "host": ["{{base_url}}"], "path": ["datasets"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "References",
+      "item": [
+        {
+          "name": "Create Reference",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"Ref A\",\n  \"url\": \"https://example.com\",\n  \"projectId\": \"{{projectId}}\"\n}" },
+            "url": { "raw": "{{base_url}}/references", "host": ["{{base_url}}"], "path": ["references"] }
+          }
+        },
+        {
+          "name": "Get References",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/references", "host": ["{{base_url}}"], "path": ["references"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Workflow Stages",
+      "item": [
+        {
+          "name": "Add Stage",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"projectId\": \"{{projectId}}\",\n  \"name\": \"Stage 1\",\n  \"position\": 1\n}" },
+            "url": { "raw": "{{base_url}}/workflow/stages", "host": ["{{base_url}}"], "path": ["workflow","stages"] }
+          }
+        },
+        {
+          "name": "Get Stages by Project",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/workflow/stages/{{projectId}}", "host": ["{{base_url}}"], "path": ["workflow","stages","{{projectId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Workflow Items",
+      "item": [
+        {
+          "name": "Create Item",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"stageId\": \"{{stageId}}\",\n  \"name\": \"Task A\",\n  \"status\": \"TODO\"\n}" },
+            "url": { "raw": "{{base_url}}/workflow/items", "host": ["{{base_url}}"], "path": ["workflow","items"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Concepts",
+      "item": [
+        {
+          "name": "Create Concept",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"projectId\": \"{{projectId}}\",\n  \"name\": \"New Concept\"\n}" },
+            "url": { "raw": "{{base_url}}/concepts", "host": ["{{base_url}}"], "path": ["concepts"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Insigts",
+      "item": [
+        {
+          "name": "Create Insight",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"projectId\": \"{{projectId}}\",\n  \"title\": \"Finding\"\n}" },
+            "url": { "raw": "{{base_url}}/insights", "host": ["{{base_url}}"], "path": ["insights"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Experiments",
+      "item": [
+        {
+          "name": "Create Experiment",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"projectId\": \"{{projectId}}\",\n  \"name\": \"Exp1\"\n}" },
+            "url": { "raw": "{{base_url}}/experiments", "host": ["{{base_url}}"], "path": ["experiments"] }
+          }
+        },
+        {
+          "name": "Get Experiments by Project",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/experiments/{{projectId}}", "host": ["{{base_url}}"], "path": ["experiments","{{projectId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Visualizations",
+      "item": [
+        {
+          "name": "Concept Graph",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/visualization/concept-graph/{{projectId}}", "host": ["{{base_url}}"], "path": ["visualization","concept-graph","{{projectId}}"] }
+          }
+        },
+        {
+          "name": "Workflow Timeline",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/visualization/workflow-timeline/{{projectId}}", "host": ["{{base_url}}"], "path": ["visualization","workflow-timeline","{{projectId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Links",
+      "item": [
+        {
+          "name": "Create Link",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"sourceId\": \"c1\",\n  \"targetId\": \"c2\",\n  \"type\": \"RELATED\"\n}" },
+            "url": { "raw": "{{base_url}}/links", "host": ["{{base_url}}"], "path": ["links"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Collections",
+      "item": [
+        {
+          "name": "Create Collection",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"name\": \"My Coll\"\n}" },
+            "url": { "raw": "{{base_url}}/collections", "host": ["{{base_url}}"], "path": ["collections"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notes",
+      "item": [
+        {
+          "name": "Create Note",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"paperId\": \"{{paperId}}\",\n  \"userId\": \"{{userId}}\",\n  \"content\": \"Some notes\"\n}" },
+            "url": { "raw": "{{base_url}}/notes", "host": ["{{base_url}}"], "path": ["notes"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tags",
+      "item": [
+        {
+          "name": "Get Tags",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/tags", "host": ["{{base_url}}"], "path": ["tags"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "AI",
+      "item": [
+        {
+          "name": "Summarize Paper",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{}" },
+            "url": { "raw": "{{base_url}}/ai/summarize/{{paperId}}", "host": ["{{base_url}}"], "path": ["ai","summarize","{{paperId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Activity",
+      "item": [
+        {
+          "name": "Get Feed",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/activity/feed", "host": ["{{base_url}}"], "path": ["activity","feed"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Search",
+      "item": [
+        {
+          "name": "History",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/search/history", "host": ["{{base_url}}"], "path": ["search","history"] }
+          }
+        }
+      ]
+    }
+  ]
+}

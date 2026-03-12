@@ -10,8 +10,15 @@ const workflowItemRoutes = require("./routes/workflowItemRoutes");
 const conceptRoutes = require("./routes/conceptRoutes");
 const insightRoutes = require("./routes/insightRoutes");
 const experimentRoutes = require("./routes/experimentRoutes");
-// const insightRoutes = require("./routes/insightRoutes");
 const visualizationRoutes = require("./routes/visualizationRoutes");
+const linkRoutes = require("./routes/linkRoutes");
+const collectionRoutes = require("./routes/collectionRoutes");
+const noteRoutes = require("./routes/noteRoutes");
+const tagRoutes = require("./routes/tagRoutes");
+const aiRoutes = require("./routes/aiRoutes");
+const activityRoutes = require("./routes/activityRoutes");
+const searchRoutes = require("./routes/searchRoutes");
+const activityLogger = require("./middleware/activityLogger");
 
 
 const app = express();
@@ -20,11 +27,6 @@ app.use(cors());
 app.use(express.json());
 
 
-app.use("/concepts", conceptRoutes);
-app.use("/experiments", experimentRoutes);
-// app.use("/insights", insightRoutes);
-app.use("/visualization", visualizationRoutes);
-app.use("/insights", insightRoutes);
 app.use("/users", userRoutes);
 app.use("/projects", projectRoutes);
 app.use("/papers", paperRoutes);
@@ -32,5 +34,26 @@ app.use("/datasets", datasetRoutes);
 app.use("/references", referenceRoutes);
 app.use("/workflow/stages", workflowStageRoutes);
 app.use("/workflow/items", workflowItemRoutes);
+app.use("/concepts", conceptRoutes);
+app.use("/insights", insightRoutes);
+app.use("/experiments", experimentRoutes);
+app.use("/visualization", visualizationRoutes);
+app.use("/links", linkRoutes);
+app.use("/collections", collectionRoutes);
+app.use("/notes", noteRoutes);
+app.use("/tags", tagRoutes);
+app.use("/ai", aiRoutes);
+app.use("/activity", activityRoutes);
+app.use("/search", searchRoutes);
+
+// Apply activity logger to all mutation routes
+app.use(activityLogger);
+
+
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error("Unhandled error:", err);
+  res.status(500).json({ error: "Internal server error" });
+});
 
 module.exports = app;

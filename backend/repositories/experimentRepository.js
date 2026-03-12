@@ -1,30 +1,51 @@
-const pool = require("../config/db");
+const prisma = require("../config/prisma");
 
-const createExperiment = async (objective, methodology, result, projectId) => {
-
- const query = `
- INSERT INTO experiments(objective, methodology, result, project_id)
- VALUES($1,$2,$3,$4)
- RETURNING *
- `;
-
- const values = [objective, methodology, result, projectId];
-
- const response = await pool.query(query, values);
-
- return response.rows[0];
+const createExperiment = async (data) => {
+  return prisma.experiment.create({ data });
 };
 
-const getExperiments = async () => {
+const getExperimentsByProject = async (projectId) => {
+  return prisma.experiment.findMany({
+    where: { projectId },
+    include: {
+      iterations: {
+        include: { results: true },
+        orderBy: { iterationNumber: "asc" }
+      }
+    },
+    orderBy: { createdAt: "desc" }
+  });
+};
 
- const response = await pool.query(
-  "SELECT * FROM experiments ORDER BY created_at DESC"
- );
+const getExperimentById = async (id) => {
+  return prisma.experiment.findUnique({
+    where: { id },
+    include: {
+      iterations: {
+        include: { results: true },
+        orderBy: { iterationNumber: "asc" }
+      }
+    }
+  });
+};
 
- return response.rows;
+const deleteExperiment = async (id) => {
+  return prisma.experiment.delete({
+    where: { id }
+  });
+};
+
+const updateExperiment = async (id, data) => {
+  return prisma.experiment.update({
+    where: { id },
+    data
+  });
 };
 
 module.exports = {
- createExperiment,
- getExperiments
+  createExperiment,
+  getExperimentsByProject,
+  getExperimentById,
+  deleteExperiment,
+  updateExperiment
 };

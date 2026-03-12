@@ -1,25 +1,57 @@
-const linkRepository = require("../repositories/linkRepository");
+const prisma = require("../config/prisma");
+
+/**
+ * Generic Entity Link Service
+ * Supports polymorphic linking between any two entities (Papers, Experiments, etc.)
+ */
 
 const createLink = async (data) => {
-  const { source_type, source_id, target_type, target_id } = data;
+  const { projectId, sourceType, sourceId, targetType, targetId, relationshipType, description } = data || {};
 
-  if (!source_type || !source_id || !target_type || !target_id) {
-    throw new Error("All link fields are required");
+  const missing = [];
+  if (!projectId) missing.push("projectId");
+  if (!sourceType) missing.push("sourceType");
+  if (!sourceId) missing.push("sourceId");
+  if (!targetType) missing.push("targetType");
+  if (!targetId) missing.push("targetId");
+  if (!relationshipType) missing.push("relationshipType");
+
+  if (missing.length > 0) {
+    throw new Error(`Missing required fields: ${missing.join(", ")}`);
   }
 
-  return await linkRepository.createLink(
-    source_type,
-    source_id,
-    target_type,
-    target_id
-  );
+  return prisma.entityLink.create({
+    data: {
+      projectId,
+      sourceType,
+      sourceId,
+      targetType,
+      targetId,
+      relationshipType,
+      description: description || null
+    }
+  });
 };
 
-const getLinks = async () => {
-  return await linkRepository.getLinks();
+const getLinksByProject = async (projectId) => {
+  if (!projectId) {
+    throw new Error("projectId is required");
+  }
+
+  return prisma.entityLink.findMany({
+    where: { projectId },
+    orderBy: { createdAt: "desc" }
+  });
+};
+
+const deleteLink = async (id) => {
+  return prisma.entityLink.delete({
+    where: { id }
+  });
 };
 
 module.exports = {
   createLink,
-  getLinks
+  getLinksByProject,
+  deleteLink
 };

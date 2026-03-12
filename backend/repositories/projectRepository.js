@@ -1,52 +1,63 @@
-const pool = require("../config/db");
+const prisma = require("../config/prisma");
 
-const createProject = async (title, description, ownerId) => {
-
- const query = `
- INSERT INTO projects(title, description, owner_id)
- VALUES($1,$2,$3)
- RETURNING *
- `;
-
- const values = [title, description, ownerId];
-
- const result = await pool.query(query, values);
-
- return result.rows[0];
+const createProject = async (data) => {
+  return prisma.project.create({ data });
 };
 
 const getProjects = async () => {
-
- const result = await pool.query(`
- SELECT * FROM projects
- ORDER BY created_at DESC
- `);
-
- return result.rows;
+  return prisma.project.findMany({
+    include: { owner: { select: { id: true, username: true, email: true } } },
+    orderBy: { createdAt: "desc" }
+  });
 };
 
-const getProjectById = async (projectId) => {
-
- const result = await pool.query(
-  "SELECT * FROM projects WHERE id=$1",
-  [projectId]
- );
-
- return result.rows[0];
+const getProjectsByUser = async (userId) => {
+  return prisma.project.findMany({
+    where: {
+      OR: [
+        { ownerId: userId },
+        { members: { some: { userId } } }
+      ]
+    },
+    include: { owner: { select: { id: true, username: true } } },
+    orderBy: { createdAt: "desc" }
+  });
 };
 
-const deleteProject = async (projectId) => {
+const getProjectById = async (id) => {
+  return prisma.project.findUnique({
+    where: { id },
+    include: {
+      owner: { select: { id: true, username: true, email: true } },
+      sections: { orderBy: { position: "asc" } },
+      members: {
+        include: { user: { select: { id: true, username: true, email: true } } }
+      },
+      datasets: true,
+      references: true,
+      workflows: { orderBy: { position: "asc" } }
+    }
+  });
+};
 
- await pool.query(
-  "DELETE FROM projects WHERE id=$1",
-  [projectId]
- );
+const updateProject = async (id, data) => {
+  return prisma.project.update({
+    where: { id },
+    data
+  });
+};
 
+const deleteProject = async (id) => {
+  return prisma.project.delete({
+    where: { id }
+  });
 };
 
 module.exports = {
- createProject,
- getProjects,
- getProjectById,
- deleteProject
+  createProject,
+  getProjects,
+  getProjectsByUser,
+  getProjectById,
+  updateProject,
+  deleteProject
 };

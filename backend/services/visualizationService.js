@@ -6,7 +6,15 @@ const getConceptGraph = async (projectId) => {
     where: { projectId }
   });
 
-  const links = await prisma.conceptLink.findMany();
+  const links = await prisma.conceptLink.findMany({
+    where: {
+      sourceNode: { projectId }
+    },
+    include: {
+      sourceNode: true,
+      targetNode: true
+    }
+  });
 
   return {
     nodes,

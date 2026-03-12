@@ -1,11 +1,10 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from app.services.insight_service import InsightExtractor
 
 
 router = APIRouter()
-
 extractor = InsightExtractor()
 
 
@@ -18,11 +17,15 @@ class InsightResponse(BaseModel):
 
 
 @router.post("/extract-insights", response_model=InsightResponse)
-def extract_insights(request: InsightRequest):
+async def extract_insights(request: InsightRequest):
     """
     Extract structured research insights from paper text.
     """
+    if not request.text or len(request.text) < 100:
+        raise HTTPException(status_code=400, detail="Text too short for insight extraction")
 
-    insights = extractor.extract_insights(request.text)
-
-    return {"insights": insights}
+    try:
+        insights = extractor.extract_insights(request.text)
+        return {"insights": insights}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Insight extraction failed: {str(e)}")
