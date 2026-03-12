@@ -1,5 +1,6 @@
 from app.models.model_registry import ModelRegistry
-
+from transformers import pipeline
+from app.core.chunking import chunk_document
 
 class InsightExtractor:
 
