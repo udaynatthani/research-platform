@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from app.api.summarize_routes import router as summarize_router
+from app.api.insight_routes import router as insight_router
 
 app = FastAPI(
     title="Research Intelligence AI Engine",
@@ -8,7 +9,7 @@ app = FastAPI(
 )
 
 app.include_router(summarize_router, prefix="/ai")
-
+app.include_router(insight_router, prefix="/ai")
 
 @app.get("/")
 def health_check():
