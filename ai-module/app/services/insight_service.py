@@ -1,18 +1,10 @@
-from transformers import pipeline
-from app.core.chunking import chunk_document
+from app.models.model_registry import ModelRegistry
 
 
 class InsightExtractor:
-    """
-    Service responsible for extracting structured research insights
-    from academic papers.
-    """
 
     def __init__(self):
-        self.extractor = pipeline(
-            "text2text-generation",
-            model="google/flan-t5-base"
-        )
+        self.extractor = ModelRegistry.get_insight_model()
 
     def extract_chunk_insights(self, text: str) -> str:
         """
