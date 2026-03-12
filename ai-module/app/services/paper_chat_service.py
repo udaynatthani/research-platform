@@ -83,3 +83,6 @@ class PaperChatService:
         )
 
         return result[0]["generated_text"]
+
+# Singleton instance used across the application
+paper_chat_service = PaperChatService()
