@@ -36,7 +36,13 @@ class VectorStore:
         results = []
 
         for distance, idx in zip(distances[0], indices[0]):
-            if idx < len(self.metadata):
-                results.append((distance, self.metadata[idx]))
+
+            if idx == -1:
+                continue
+
+            if idx >= len(self.metadata):
+                continue
+
+            results.append((distance, self.metadata[idx]))
 
         return results
