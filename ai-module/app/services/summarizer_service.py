@@ -13,27 +13,27 @@ class PaperSummarizer:
             model="sshleifer/distilbart-cnn-12-6"
         )
 
-    def summarize_chunk(self, text: str) -> str:
+    def summarize_chunks(self, chunks):
         """
-        Summarize a single chunk of text.
+        Summarize multiple chunks using batch inference.
         """
 
-        word_count = len(text.split())
+        filtered_chunks = [c for c in chunks if len(c.split()) > 40]
 
-        # Dynamically adjust summary size
-        max_len = min(130, max(30, word_count // 2))
-        min_len = min(40, max(10, word_count // 4))
+        if not filtered_chunks:
+            return []
 
-        result = self.summarizer(
-            text,
-            max_length=max_len,
-            min_length=min_len,
+        results = self.summarizer(
+            filtered_chunks,
+            max_length=130,
+            min_length=30,
             do_sample=False,
             truncation=True,
-            repetition_penalty=1.2
+            repetition_penalty=1.2,
+            batch_size=4
         )
 
-        return result[0]["summary_text"]
+        return [r["summary_text"] for r in results]
 
     def summarize_paper(self, paper_text: str) -> str:
         """
@@ -42,12 +42,8 @@ class PaperSummarizer:
 
         chunks = chunk_document(paper_text)
 
-        partial_summaries = []
+        summaries = self.summarize_chunks(chunks)
 
-        for chunk in chunks:
-            summary = self.summarize_chunk(chunk)
-            partial_summaries.append(summary)
-
-        combined_summary = " ".join(partial_summaries)
+        combined_summary = " ".join(summaries)
 
         return combined_summary
