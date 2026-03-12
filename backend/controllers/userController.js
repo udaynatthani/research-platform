@@ -1,5 +1,6 @@
 const userService = require("../services/userService");
 
+
 // Register User
 const registerUser = async (req, res) => {
   try {
@@ -57,9 +58,19 @@ const getUsers = async (req, res) => {
 
   }
 };
+const getCurrentUser = async (req, res) => {
+
+  const user = await prisma.user.findUnique({
+    where: { id: req.user.userId }
+  });
+
+  res.json(user);
+
+};
 
 module.exports = {
   registerUser,
   loginUser,
-  getUsers
+  getUsers,
+  getCurrentUser
 };

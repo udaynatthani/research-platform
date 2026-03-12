@@ -1,7 +1,6 @@
 const paperService = require("../services/paperService");
 
 const createPaper = async (req, res) => {
-
   try {
 
     const paper = await paperService.createPaper(req.body);
@@ -13,7 +12,6 @@ const createPaper = async (req, res) => {
     res.status(500).json({ error: error.message });
 
   }
-
 };
 
 const getPapers = async (req, res) => {

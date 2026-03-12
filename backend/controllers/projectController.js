@@ -1,10 +1,14 @@
 const projectService = require("../services/projectService");
 
 const createProject = async (req, res) => {
-
   try {
 
-    const project = await projectService.createProject(req.body);
+    const data = {
+      ...req.body,
+      ownerId: req.user.userId
+    };
+
+    const project = await projectService.createProject(data);
 
     res.status(201).json(project);
 
@@ -13,7 +17,6 @@ const createProject = async (req, res) => {
     res.status(500).json({ error: error.message });
 
   }
-
 };
 
 const getProjects = async (req, res) => {

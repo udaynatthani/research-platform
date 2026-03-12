@@ -1,11 +1,11 @@
-import jwt from "jsonwebtoken";
+const jwt = require("jsonwebtoken");
 
-export const authenticate = (req, res, next) => {
+const authenticate = (req, res, next) => {
 
   const authHeader = req.headers.authorization;
 
   if (!authHeader) {
-    return res.status(401).json({ message: "No token provided" });
+    return res.status(401).json({ message: "Token missing" });
   }
 
   const token = authHeader.split(" ")[1];
@@ -20,7 +20,10 @@ export const authenticate = (req, res, next) => {
 
   } catch (error) {
 
-    return res.status(401).json({ message: "Invalid token" });
+    res.status(401).json({ message: "Invalid token" });
 
   }
+
 };
+
+module.exports = authenticate;
