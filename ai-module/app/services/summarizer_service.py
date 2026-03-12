@@ -1,17 +1,10 @@
-from transformers import pipeline
-from app.core.chunking import chunk_document
+from app.models.model_registry import ModelRegistry
 
 
 class PaperSummarizer:
-    """
-    Service responsible for generating summaries of research papers.
-    """
 
     def __init__(self):
-        self.summarizer = pipeline(
-            "summarization",
-            model="sshleifer/distilbart-cnn-12-6"
-        )
+        self.summarizer = ModelRegistry.get_summarizer()
 
     def summarize_chunks(self, chunks):
         """
