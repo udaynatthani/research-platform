@@ -101,7 +101,19 @@ const getRecommendations = async (req, res) => {
 
 const checkPlagiarism = async (req, res) => {
   try {
-    const { text } = req.body;
+    let { text, paperId } = req.body;
+    
+    // If text is missing but paperId is provided, fetch content
+    if (!text && paperId) {
+      const content = await prisma.paperContent.findUnique({ where: { paperId } });
+      if (!content) return res.status(404).json({ error: "Paper content not indexed yet. Please run index first." });
+      text = content.fullText;
+    }
+
+    if (!text) {
+      return res.status(400).json({ error: "Either text or paperId is required" });
+    }
+
     const result = await aiService.checkPlagiarism(text);
     res.json(result);
   } catch (error) {

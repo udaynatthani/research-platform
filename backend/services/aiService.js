@@ -13,13 +13,23 @@ const aiClient = axios.create({
   timeout: 60000, // AI tasks can be slow
 });
 
+const formatAiError = (error, fallback) => {
+  const detail = error.response?.data?.detail;
+  if (!detail) return error.message || fallback;
+  if (typeof detail === 'string') return detail;
+  if (Array.isArray(detail)) {
+    return detail.map(d => `${d.loc.join('.')}: ${d.msg}`).join(' | ');
+  }
+  return JSON.stringify(detail);
+};
+
 const summarizePaper = async (text) => {
   try {
     const response = await aiClient.post("/ai/summarize-paper", { text });
     return response.data;
   } catch (error) {
     console.error("AI Summarize Error:", error.response?.data || error.message);
-    throw new Error(error.response?.data?.detail || "AI Summarization failed");
+    throw new Error(formatAiError(error, "AI Summarization failed"));
   }
 };
 
@@ -32,7 +42,7 @@ const chatWithPaper = async (question, paperId = null) => {
     return response.data;
   } catch (error) {
     console.error("AI Chat Error:", error.response?.data || error.message);
-    throw new Error(error.response?.data?.detail || "AI Chat failed");
+    throw new Error(formatAiError(error, "AI Chat failed"));
   }
 };
 
@@ -45,7 +55,7 @@ const indexPaper = async (paperId, text) => {
     return response.data;
   } catch (error) {
     console.error("AI Indexing Error:", error.response?.data || error.message);
-    throw new Error(error.response?.data?.detail || "AI Indexing failed");
+    throw new Error(formatAiError(error, "AI Indexing failed"));
   }
 };
 
@@ -55,7 +65,7 @@ const extractInsights = async (text) => {
     return response.data;
   } catch (error) {
     console.error("AI Insight Error:", error.response?.data || error.message);
-    throw new Error(error.response?.data?.detail || "AI Insight extraction failed");
+    throw new Error(formatAiError(error, "AI Insight extraction failed"));
   }
 };
 
@@ -65,7 +75,7 @@ const checkPlagiarism = async (text) => {
     return response.data;
   } catch (error) {
     console.error("AI Plagiarism Error:", error.response?.data || error.message);
-    throw new Error(error.response?.data?.detail || "AI Plagiarism check failed");
+    throw new Error(formatAiError(error, "AI Plagiarism check failed"));
   }
 };
 
@@ -78,7 +88,7 @@ const getRecommendations = async (text, topK = 5) => {
     return response.data;
   } catch (error) {
     console.error("AI Recommendation Error:", error.response?.data || error.message);
-    throw new Error(error.response?.data?.detail || "AI Recommendation failed");
+    throw new Error(formatAiError(error, "AI Recommendation failed"));
   }
 };
 

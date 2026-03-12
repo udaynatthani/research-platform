@@ -1,5 +1,6 @@
 const prisma = require("../config/prisma");
 const axios = require("axios");
+const aiService = require("./aiService");
 
 /**
  * Paper Service
@@ -7,14 +8,88 @@ const axios = require("axios");
  */
 
 const createPaper = async (data) => {
-  return prisma.paper.create({
-    data,
-    include: {
-      authors: {
-        include: { author: true }
+  const { title, abstract, publicationYear, citationCount, doi, url, authors: authorsString } = data;
+
+  return prisma.$transaction(async (tx) => {
+    const paper = await tx.paper.create({
+      data: {
+        title,
+        abstract,
+        publicationYear,
+        citationCount: citationCount || 0,
+        doi,
+        url
+      }
+    });
+
+    if (authorsString) {
+      // Split authors string by comma and trim
+      const authorNames = authorsString.split(',').map(a => a.trim()).filter(a => a);
+      
+      for (let i = 0; i < authorNames.length; i++) {
+        let author = await tx.author.findFirst({
+          where: { name: authorNames[i] }
+        });
+
+        if (!author) {
+          author = await tx.author.create({
+            data: { name: authorNames[i] }
+          });
+        }
+
+        await tx.paperAuthor.create({
+          data: {
+            paperId: paper.id,
+            authorId: author.id,
+            authorOrder: i + 1
+          }
+        });
       }
     }
+
+    const paperWithAuthors = await tx.paper.findUnique({
+      where: { id: paper.id },
+      include: {
+        authors: {
+          include: { author: true },
+          orderBy: { authorOrder: "asc" }
+        }
+      }
+    });
+
+    // Auto-index if abstract is present
+    if (abstract) {
+      autoIndexPaper(paper.id, abstract).catch(err => 
+        console.error(`Auto-indexing failed for paper ${paper.id}:`, err.message)
+      );
+    }
+
+    return paperWithAuthors;
   });
+};
+
+/**
+ * Helper to index paper in background
+ */
+const autoIndexPaper = async (paperId, text) => {
+  try {
+    // 1. Save to SQL paperContent
+    await prisma.paperContent.upsert({
+      where: { paperId },
+      update: { fullText: text },
+      create: {
+        paperId,
+        fullText: text,
+        extractionMethod: "AUTO_INDEX",
+      },
+    });
+
+    // 2. Index in Vector Store
+    await aiService.indexPaper(paperId, text);
+    console.log(`Successfully auto-indexed paper ${paperId}`);
+  } catch (error) {
+    throw error;
+  }
 };
 
 const getPapers = async () => {
@@ -134,7 +209,7 @@ const savePaperFromExternal = async (externalData) => {
       }
     }
 
-    return tx.paper.findUnique({
+    const paperWithAuthors = await tx.paper.findUnique({
       where: { id: paper.id },
       include: {
         authors: {
@@ -143,6 +218,15 @@ const savePaperFromExternal = async (externalData) => {
         }
       }
     });
+
+    // Auto-index if abstract is present
+    if (abstract) {
+      autoIndexPaper(paper.id, abstract).catch(err => 
+        console.error(`Auto-indexing failed for external paper ${paper.id}:`, err.message)
+      );
+    }
+
+    return paperWithAuthors;
   });
 
   return result;

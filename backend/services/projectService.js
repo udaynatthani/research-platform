@@ -2,12 +2,13 @@ const prisma = require("../config/prisma");
 
 const createProject = async (data, userId) => {
 
-  const { title, description } = data;
+  const { title, description, visibility } = data;
 
   return prisma.project.create({
     data: {
       title,
       description,
+      visibility,
       ownerId: userId
     }
   });

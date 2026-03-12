@@ -1,16 +1,37 @@
-# React + Vite
+# Research Workflow & Insight Intelligence Platform — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Stack
+- **React 18** + **Vite 6**
+- **Tailwind CSS v4** (via `@tailwindcss/vite`)
+- **React Router DOM v7**
+- **Axios** with JWT interceptors + refresh token rotation
+- **React Hook Form** + **Zod**
+- **D3.js** for force-directed concept graphs
+- **Lucide React** for icons
 
-Currently, two official plugins are available:
+## Setup
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+```bash
+npm install
+npm run dev
+```
 
-## React Compiler
+The app connects to the Express backend at `http://localhost:5000`.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Features
+| Route | Feature |
+|---|---|
+| `/dashboard` | Stats overview, activity feed, search history |
+| `/projects` | Create and switch research projects |
+| `/papers` | Search local + Semantic Scholar, save papers, add notes & tags |
+| `/collections` | Curated paper collections |
+| `/workflow` | Kanban board with drag-and-drop |
+| `/experiments` | Experiment tracking with iterations and JSON metrics |
+| `/concept-map` | D3 force-directed knowledge graph |
+| `/insights` | Research insights with lineage tracing |
+| `/visualization` | Concept graph, workflow timeline, insight network |
+| `/ai` | AI summarize, extract insights, chat |
+| `/activity` | Audit log feed + search history |
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Authentication
+JWT access token stored in localStorage. Refresh token auto-rotated via Axios interceptor. On 401, retries once after refreshing. On second failure, logs out and redirects to `/login`.
