@@ -18,7 +18,9 @@ const tagRoutes = require("./routes/tagRoutes");
 const aiRoutes = require("./routes/aiRoutes");
 const activityRoutes = require("./routes/activityRoutes");
 const searchRoutes = require("./routes/searchRoutes");
+const fileRoutes = require("./routes/fileRoutes"); // Added
 const activityLogger = require("./middleware/activityLogger");
+const path = require("path"); // Added
 
 
 const app = express();
@@ -45,6 +47,10 @@ app.use("/tags", tagRoutes);
 app.use("/ai", aiRoutes);
 app.use("/activity", activityRoutes);
 app.use("/search", searchRoutes);
+app.use("/files", fileRoutes); // Added
+
+// Serve uploads folder statically in development
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Apply activity logger to all mutation routes
 app.use(activityLogger);

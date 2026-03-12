@@ -1,24 +1,24 @@
 const prisma = require("../config/prisma");
 
-const createProject = async (data) => {
+const createProject = async (data, userId) => {
 
-  const { ownerId, title, description } = data;
+  const { title, description } = data;
 
   return prisma.project.create({
     data: {
-      ownerId,
       title,
-      description
+      description,
+      ownerId: userId
     }
   });
 
 };
 
-const getProjects = async () => {
+const getProjects = async (userId) => {
 
   return prisma.project.findMany({
-    include: {
-      owner: true
+    where: {
+      ownerId: userId
     }
   });
 
