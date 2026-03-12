@@ -18,11 +18,19 @@ class PaperSummarizer:
         Summarize a single chunk of text.
         """
 
+        word_count = len(text.split())
+
+        # Dynamically adjust summary size
+        max_len = min(130, max(30, word_count // 2))
+        min_len = min(40, max(10, word_count // 4))
+
         result = self.summarizer(
             text,
-            max_length=130,
-            min_length=40,
-            do_sample=False
+            max_length=max_len,
+            min_length=min_len,
+            do_sample=False,
+            truncation=True,
+            repetition_penalty=1.2
         )
 
         return result[0]["summary_text"]
