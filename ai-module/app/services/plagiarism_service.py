@@ -1,39 +1,45 @@
-from sklearn.metrics.pairwise import cosine_similarity
-
 from app.core.chunking import chunk_document
 from app.models.embedding_model import EmbeddingModel
+from app.services.paper_chat_service import paper_chat_service
 
 
 class PlagiarismService:
 
     def __init__(self):
         self.embedder = EmbeddingModel
+        self.vector_store = paper_chat_service.vector_store
 
-    def check_plagiarism(self, paper_a: str, paper_b: str):
-        """
-        Compare two papers and return similarity score.
-        """
+    def check_plagiarism(self, paper: str):
 
-        chunks_a = chunk_document(paper_a)
-        chunks_b = chunk_document(paper_b)
+        chunks = chunk_document(paper)
 
-        embeddings_a = self.embedder.embed_batch(chunks_a)
-        embeddings_b = self.embedder.embed_batch(chunks_b)
-
-        similarity_matrix = cosine_similarity(embeddings_a, embeddings_b)
-
-        max_similarities = similarity_matrix.max(axis=1)
-
-        plagiarism_score = float(max_similarities.mean())
+        embeddings = self.embedder.embed_batch(chunks)
 
         matches = []
+        similarity_scores = []
 
-        for i, score in enumerate(max_similarities):
-            if score > 0.85:
-                matches.append({
-                    "text": chunks_a[i],
-                    "similarity": float(score)
-                })
+        for i, emb in enumerate(embeddings):
+
+            results = self.vector_store.search(emb, k=3)
+
+            for distance, metadata in results:
+
+                similarity = 1 - distance
+
+                similarity_scores.append(similarity)
+
+                if similarity > 0.85:
+
+                    matches.append({
+                        "text": chunks[i],
+                        "matched_text": metadata["text"],
+                        "similarity": float(similarity)
+                    })
+
+        if len(similarity_scores) == 0:
+            plagiarism_score = 0.0
+        else:
+            plagiarism_score = float(sum(similarity_scores) / len(similarity_scores))
 
         return {
             "plagiarism_score": plagiarism_score,
