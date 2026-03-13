@@ -41,8 +41,8 @@ export default function ProjectsPage() {
   }
 
   return (
-    <div className="max-w-5xl space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="max-w-5xl mx-auto space-y-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
           <h1 className="font-display font-bold text-2xl text-slate-900">Projects</h1>
           <p className="text-slate-500 text-sm">Organize all your research in one place</p>

@@ -13,10 +13,11 @@ export default function AppShell() {
       <Sidebar />
       <Topbar />
       <main className="ml-16 pt-14 min-h-screen">
-        <div className="p-6">
+        <div className="px-4 py-5 sm:px-6 sm:py-6 lg:px-8 lg:py-8 max-w-[1600px] mx-auto">
           <Outlet />
         </div>
       </main>
     </div>
   )
 }
+

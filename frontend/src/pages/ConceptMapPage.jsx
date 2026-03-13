@@ -65,30 +65,30 @@ export default function ConceptMapPage() {
         <Button className="!bg-purple-600 !text-white hover:!bg-purple-700" onClick={() => setModal(true)}><Plus size={16}/> New Node</Button>
       </div>
 
-      <div className="flex gap-4 h-[calc(100vh-220px)]">
+      <div className="flex flex-col lg:flex-row gap-4 h-auto lg:h-[calc(100vh-220px)]">
         {/* Left panel — node list */}
-        <div className="w-64 shrink-0 overflow-y-auto space-y-2">
-          {loading ? [...Array(4)].map((_, i) => <div key={i} className="h-14 skeleton rounded-xl" />) :
+        <div className="w-full lg:w-64 shrink-0 flex flex-row lg:flex-col overflow-x-auto lg:overflow-y-auto gap-2 pb-2 lg:pb-0">
+          {loading ? [...Array(4)].map((_, i) => <div key={i} className="h-14 lg:h-14 w-32 lg:w-full shrink-0 skeleton rounded-xl" />) :
           concepts.length === 0 ? <EmptyState icon={Network} title="No concepts" description="Create concept nodes" action={() => setModal(true)} actionLabel="Create" /> :
           concepts.map(n => (
             <div key={n.id} onClick={() => setSelectedNode(n)}
-              className={`p-3 rounded-xl border cursor-pointer transition-colors ${selectedNode?.id === n.id ? 'border-purple-300 bg-purple-50' : 'bg-white border-slate-100 hover:border-purple-200'}`}>
+              className={`p-3 rounded-xl border cursor-pointer transition-colors shrink-0 w-48 lg:w-full ${selectedNode?.id === n.id ? 'border-purple-300 bg-purple-50' : 'bg-white border-slate-100 hover:border-purple-200'}`}>
               <div className="flex items-center gap-2 mb-1">
                 <Badge label={n.type} color={typeColors[n.type] || 'slate'} />
               </div>
-              <p className="text-sm font-medium text-slate-800 leading-tight">{n.title}</p>
+              <p className="text-sm font-medium text-slate-800 leading-tight truncate lg:whitespace-normal">{n.title}</p>
             </div>
           ))}
         </div>
 
         {/* Graph canvas */}
-        <div className="flex-1 bg-white rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden">
+        <div className="flex-1 bg-white rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden min-h-[400px] lg:min-h-0">
           <ConceptGraph nodes={concepts} links={links} onNodeClick={handleNodeClick} />
           {selectedNode && (
-            <div className="absolute bottom-4 right-4 bg-white rounded-xl shadow-lg border border-slate-100 p-4 w-64">
-              <p className="font-display font-semibold text-sm text-slate-800 mb-1">{selectedNode.title}</p>
+            <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-slate-100 p-4 w-60 sm:w-64 z-10 transition-all">
+              <p className="font-display font-semibold text-sm text-slate-800 mb-1 truncate">{selectedNode.title}</p>
               <Badge label={selectedNode.type} color={typeColors[selectedNode.type] || 'slate'} />
-              {selectedNode.description && <p className="text-xs text-slate-500 mt-2">{selectedNode.description}</p>}
+              {selectedNode.description && <p className="text-xs text-slate-500 mt-2 line-clamp-3">{selectedNode.description}</p>}
               <Button size="sm" variant="secondary" className="mt-3 w-full !justify-center" onClick={() => setLinkModal(true)}>
                 <Plus size={12}/> Add Link
               </Button>
@@ -96,6 +96,7 @@ export default function ConceptMapPage() {
           )}
         </div>
       </div>
+
 
       <Modal isOpen={modal} onClose={() => { setModal(false); reset() }} title="New Concept Node">
         <form onSubmit={handleSubmit(onCreateNode)} className="space-y-4">

@@ -40,7 +40,7 @@ export default function InsightsPage() {
   if (!pid) return <div className="text-slate-400 text-sm">Select a project to view insights.</div>
 
   return (
-    <div className="max-w-6xl space-y-5">
+    <div className="max-w-6xl mx-auto space-y-5">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-display font-bold text-2xl text-slate-900">Insights</h1>

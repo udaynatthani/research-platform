@@ -1,5 +1,6 @@
 import { useState, useCallback, memo } from 'react';
-import { Plus, Bookmark, Trash2, ArrowLeft } from 'lucide-react';
+import { Plus, Bookmark, Trash2, ArrowLeft, ExternalLink } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import useToast from '../hooks/useToast';
 import useApi from '../hooks/useApi';
 import Card from '../components/ui/Card';
@@ -12,10 +13,14 @@ import api from '../lib/api';
 
 export default function CollectionsPage() {
   const { pushToast } = useToast();
+  const navigate = useNavigate();
   const [createModal, setCreateModal] = useState(false);
   const [activeCollection, setActiveCollection] = useState(null);
   const [colName, setColName] = useState('');
   const [colDetail, setColDetail] = useState(null);
+  
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null); // For collection deletion
+  const [confirmRemoveId, setConfirmRemoveId] = useState(null); // For paper removal
 
   const { data: collections, loading, refetch } = useApi(() => api.get('/collections').then((r) => r.data));
 
@@ -40,20 +45,36 @@ export default function CollectionsPage() {
   }, []);
 
   const handleRemovePaper = useCallback(async (paperId) => {
+    if (confirmRemoveId !== paperId) {
+      setConfirmRemoveId(paperId);
+      setTimeout(() => setConfirmRemoveId(null), 3000);
+      return;
+    }
     try {
       await api.delete(`/collections/${activeCollection.id}/papers/${paperId}`);
       setColDetail((c) => ({ ...c, papers: c.papers.filter((p) => p.paperId !== paperId) }));
-      pushToast({ message: 'Removed', type: 'success' });
-    } catch (_) {}
-  }, [activeCollection?.id, pushToast]);
+      pushToast({ message: 'Paper removed from collection', type: 'success' });
+    } catch (_) {
+      pushToast({ message: 'Failed to remove paper', type: 'error' });
+    }
+    setConfirmRemoveId(null);
+  }, [activeCollection?.id, confirmRemoveId, pushToast]);
 
   const handleDeleteCollection = useCallback(async (id) => {
+    if (confirmDeleteId !== id) {
+      setConfirmDeleteId(id);
+      setTimeout(() => setConfirmDeleteId(null), 3000);
+      return;
+    }
     try {
       await api.delete(`/collections/${id}`);
-      pushToast({ message: 'Deleted', type: 'success' });
+      pushToast({ message: 'Collection deleted', type: 'success' });
       refetch();
-    } catch (_) {}
-  }, [pushToast, refetch]);
+    } catch (_) {
+      pushToast({ message: 'Failed to delete collection', type: 'error' });
+    }
+    setConfirmDeleteId(null);
+  }, [confirmDeleteId, pushToast, refetch]);
 
   if (activeCollection) {
     return (
@@ -67,14 +88,23 @@ export default function CollectionsPage() {
         ) : (
           <div className="space-y-3">
             {colDetail.papers.map((cp) => (
-              <Card key={cp.paperId} accentColor="violet" className="p-4 flex items-center gap-3">
+              <Card key={cp.paperId} accentColor="violet" className="p-4 flex items-center gap-3 cursor-pointer hover:shadow-sm" onClick={() => navigate(`/papers/${cp.paperId}`)}>
                 <div className="flex-1">
-                  <h3 className="text-sm font-medium text-gray-900">{cp.paper?.title}</h3>
-                  <p className="text-xs text-gray-400">{cp.paper?.publicationYear}</p>
+                  <h3 className="text-sm font-semibold text-gray-900 group-hover:text-violet-600 transition-colors">{cp.paper?.title}</h3>
+                  <div className="flex items-center gap-2 mt-1">
+                    <p className="text-xs text-slate-400 font-medium">{cp.paper?.publicationYear}</p>
+                    <span className="text-[10px] text-slate-300">•</span>
+                    <span className="text-[10px] text-violet-500 font-bold uppercase tracking-widest">View Detail</span>
+                  </div>
                 </div>
-                <button onClick={() => handleRemovePaper(cp.paperId)} className="text-gray-300 hover:text-rose-500 transition-colors">
-                  <Trash2 size={14} />
-                </button>
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); handleRemovePaper(cp.paperId); }} 
+                    className={`p-2 rounded-lg transition-all ${confirmRemoveId === cp.paperId ? 'bg-rose-500 text-white' : 'text-slate-300 hover:text-rose-500 hover:bg-rose-50'}`}
+                  >
+                    {confirmRemoveId === cp.paperId ? <span className="text-[10px] font-black uppercase px-1">Confirm</span> : <Trash2 size={14} />}
+                  </button>
+                </div>
               </Card>
             ))}
           </div>
@@ -107,8 +137,11 @@ export default function CollectionsPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge label={`${c._count?.papers || 0} papers`} color="violet" />
-                  <button onClick={(e) => { e.stopPropagation(); handleDeleteCollection(c.id); }} className="text-gray-300 hover:text-rose-500">
-                    <Trash2 size={13} />
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); handleDeleteCollection(c.id); }} 
+                    className={`p-1.5 rounded-lg transition-all ${confirmDeleteId === c.id ? 'bg-rose-500 text-white' : 'text-gray-300 hover:text-rose-500 hover:bg-rose-50'}`}
+                  >
+                    {confirmDeleteId === c.id ? <span className="text-[9px] font-black uppercase px-1">Sure?</span> : <Trash2 size={13} />}
                   </button>
                 </div>
               </div>

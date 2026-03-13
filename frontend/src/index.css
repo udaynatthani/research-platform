@@ -1,9 +1,10 @@
 @import "tailwindcss";
 
 :root {
-  --font-display: 'Syne', sans-serif;
-  --font-body: 'DM Sans', sans-serif;
+  --font-display: 'Poppins', sans-serif;
+  --font-body: 'Poppins', sans-serif;
 }
+
 
 *, *::before, *::after { box-sizing: border-box; }
 

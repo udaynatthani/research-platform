@@ -17,6 +17,8 @@ const Insights     = lazy(() => import('./pages/InsightsPage'))
 const Visualization= lazy(() => import('./pages/VisualizationPage'))
 const AIAssistant  = lazy(() => import('./pages/AIAssistantPage'))
 const Activity     = lazy(() => import('./pages/ActivityPage'))
+const PaperDetail  = lazy(() => import('./pages/papers/PaperDetailPage'))
+const Datasets     = lazy(() => import('./pages/DatasetsPage'))
 
 function PrivateRoute() {
   const { isAuthenticated, isLoading } = useAuth()
@@ -51,6 +53,8 @@ const router = createBrowserRouter([
         { path: '/visualization',  element: wrap(Visualization) },
         { path: '/ai',             element: wrap(AIAssistant) },
         { path: '/activity',       element: wrap(Activity) },
+        { path: '/papers/:id',     element: wrap(PaperDetail) },
+        { path: '/datasets',       element: wrap(Datasets) },
       ]
     }]
   },

@@ -35,7 +35,7 @@ export default function LoginPage() {
           <div className="w-14 h-14 rounded-2xl bg-indigo-600 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-indigo-200">
             <span className="text-white font-display font-bold text-2xl">R</span>
           </div>
-          <h1 className="font-display font-bold text-3xl text-slate-900">ResearchOS</h1>
+          <h1 className="font-display font-bold text-3xl text-slate-900">Synara</h1>
           <p className="text-slate-500 text-sm mt-1">Sign in to your workspace</p>
         </div>
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-8">
