@@ -76,11 +76,21 @@ const saveExternal = async (req, res) => {
   }
 };
 
+const deletePaper = async (req, res) => {
+  try {
+    await paperService.deletePaper(req.params.id);
+    res.json({ message: "Paper deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   createPaper,
   getPapers,
   getPaperById,
   searchPapers,
   searchExternal,
-  saveExternal
+  saveExternal,
+  deletePaper
 };

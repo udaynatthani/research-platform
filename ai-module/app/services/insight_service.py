@@ -7,13 +7,11 @@ class InsightExtractor:
     def __init__(self):
         self.extractor = ModelRegistry.get_insight_model()
 
-    def extract_insights(self, paper_text: str) -> str:
+    def extract_insights(self, paper_text: str) -> dict:
         """
-        Extract key research insights from relevant parts of the paper.
-        Focuses on the introduction/abstract (first 2000 chars) for high density of insights.
+        Extract key research insights and calculate a confidence score.
         """
         
-        # Only process the first part to keep things snappy and accurate
         context = paper_text[:2500]
 
         prompt = f"""
@@ -38,4 +36,15 @@ class InsightExtractor:
             truncation=True
         )
 
-        return result[0]["generated_text"]
+        insights_text = result[0]["generated_text"]
+        
+        # Simple heuristic for confidence score: 
+        # Boost based on length and presence of expected bullet structure
+        score = 0.7  # Base confidence
+        if len(insights_text.split()) > 30: score += 0.15
+        if "-" in insights_text: score += 0.1
+        
+        return {
+            "insights": insights_text,
+            "confidence_score": min(score, 0.98) # Cap at 98%
+        }

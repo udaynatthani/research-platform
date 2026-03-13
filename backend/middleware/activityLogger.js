@@ -26,7 +26,7 @@ const activityLogger = async (req, res, next) => {
     if (isMutation && res.statusCode >= 200 && res.statusCode < 300) {
       try {
         const action = `${method} ${path}`;
-        const entityId = res.locals.body?.id || null;
+        const entityId = res.locals.body?.id || res.locals.body?.paperId || null;
         
         // Basic entity type extraction from path
         let entityType = null;
@@ -35,17 +35,18 @@ const activityLogger = async (req, res, next) => {
         else if (path.includes("/experiments")) entityType = "EXPERIMENT";
         else if (path.includes("/datasets")) entityType = "DATASET";
         else if (path.includes("/notes")) entityType = "NOTE";
+        else if (path.includes("/collections")) entityType = "COLLECTION";
+        else if (path.includes("/ai")) entityType = "AI";
 
         await prisma.auditLog.create({
           data: {
-            userId: user?.userId || null,
+            userId: req.user?.userId || null, // Use req.user which is set by auth middleware
             action,
             entityType,
             entityId: entityId ? String(entityId) : null,
             metadata: {
               ip: req.ip,
               userAgent: req.get("user-agent"),
-              // Don't log full body for privacy/size, but maybe specific fields if needed
             },
           },
         });

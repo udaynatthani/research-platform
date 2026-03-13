@@ -14,6 +14,8 @@ class InsightRequest(BaseModel):
 
 class InsightResponse(BaseModel):
     insights: str
+    confidence_score: float
+
 
 
 @router.post("/extract-insights", response_model=InsightResponse)
@@ -25,7 +27,8 @@ async def extract_insights(request: InsightRequest):
         raise HTTPException(status_code=400, detail="Text too short for insight extraction")
 
     try:
-        insights = extractor.extract_insights(request.text)
-        return {"insights": insights}
+        result = extractor.extract_insights(request.text)
+        return result
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Insight extraction failed: {str(e)}")

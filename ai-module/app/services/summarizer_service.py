@@ -13,12 +13,13 @@ class PaperSummarizer:
         Generate structured summary for a research paper.
         """
         
-        # Get overall summary using BART
+        # Get more comprehensive summary by processing more chunks
         chunks = chunk_document(paper_text)
-        overall_summary = self._get_overall_summary(chunks[:3]) # Summarize start of paper
+        # Process up to 5 chunks for a broader summary of the paper's content
+        overall_summary = self._get_overall_summary(chunks[:5]) 
 
-        # Use FLAN-T5 for structured extraction from the introduction/abstract
-        context = paper_text[:2000]
+        # Use refined context for structured extraction (Abstract + Intro usually in first 4000 chars)
+        context = paper_text[:4000]
         
         contribution = self._extract_field(context, "What is the primary contribution or finding of this paper?")
         methodology = self._extract_field(context, "What research methodology or approach was used?")
@@ -30,6 +31,7 @@ class PaperSummarizer:
             "methodology": methodology,
             "limitations": limitations
         }
+
 
     def _get_overall_summary(self, chunks):
         filtered_chunks = [c for c in chunks if len(c.split()) > 40]

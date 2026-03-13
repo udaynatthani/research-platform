@@ -14,6 +14,7 @@ const createFileRecord = async (data) => {
     mimeType, 
     fileSize, 
     storagePath, 
+    url,
     entityType, 
     entityId,
     metadata 
@@ -28,6 +29,7 @@ const createFileRecord = async (data) => {
       mimeType,
       fileSize,
       storagePath,
+      url: url || null,
       entityType,
       entityId: entityId || null,
       metadata: metadata || {}

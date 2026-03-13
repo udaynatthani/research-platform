@@ -61,6 +61,37 @@ const chatWithPaper = async (req, res) => {
   }
 };
 
+const getChatHistory = async (req, res) => {
+  try {
+    const { paperId } = req.params;
+    const userId = req.user.userId;
+
+    // Find the latest session for this user and paper
+    const sessions = await prisma.aIChatSession.findMany({
+      where: { userId, paperId },
+      orderBy: { createdAt: "desc" },
+      take: 1,
+    });
+
+    if (!sessions.length) return res.json({ messages: [], sessionId: null });
+
+    const messages = await chatSessionService.getSessionMessages(sessions[0].id);
+    
+    // Map backend roles (USER, ASSISTANT) back to frontend roles (user, ai)
+    const formattedMessages = messages.map(m => ({
+      role: m.role === 'USER' ? 'user' : 'ai',
+      content: m.message
+    }));
+
+    res.json({
+      sessionId: sessions[0].id,
+      messages: formattedMessages
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 const extractInsights = async (req, res) => {
   try {
     const { paperId } = req.params;
@@ -76,10 +107,16 @@ const extractInsights = async (req, res) => {
       projectId,
       paperId,
       content: aiResult.insights,
+      confidenceScore: aiResult.confidence_score,
       createdBy: "AI",
     });
 
-    res.json(insight);
+
+    // Ensure we return 'insights' field for frontend consistency even if DB uses 'content'
+    res.json({
+      ...insight,
+      insights: insight.content
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -123,15 +160,24 @@ const checkPlagiarism = async (req, res) => {
 
 const indexPaper = async (req, res) => {
   try {
-    const { paperId, text } = req.body;
-    if (!paperId || !text) {
-      return res.status(400).json({ error: "paperId and text are required" });
+    let { paperId, text } = req.body;
+    if (!paperId) {
+      return res.status(400).json({ error: "paperId is required" });
     }
 
     // 1. Ensure Paper exists in SQL DB
     const paper = await prisma.paper.findUnique({ where: { id: paperId } });
     if (!paper) {
       return res.status(404).json({ error: "Paper record not found. Please save the paper to the database first." });
+    }
+
+    // Use abstract if text is not provided
+    if (!text) {
+      text = paper.abstract;
+    }
+
+    if (!text) {
+      return res.status(400).json({ error: "No text provided and paper abstract is empty." });
     }
 
     // 2. Save/Update paper content in SQL for summarization/insights
@@ -160,8 +206,9 @@ const indexPaper = async (req, res) => {
 module.exports = {
   summarizePaper,
   chatWithPaper,
+  getChatHistory,
   extractInsights,
   getRecommendations,
   checkPlagiarism,
-  indexPaper, // Added
+  indexPaper,
 };

@@ -10,17 +10,27 @@ const AI_URL = process.env.AI_SERVICE_URL || "http://localhost:8000";
 
 const aiClient = axios.create({
   baseURL: AI_URL,
-  timeout: 60000, // AI tasks can be slow
+  timeout: 120000, // Increased timeout for long paper summarization
 });
 
+
 const formatAiError = (error, fallback) => {
-  const detail = error.response?.data?.detail;
-  if (!detail) return error.message || fallback;
-  if (typeof detail === 'string') return detail;
-  if (Array.isArray(detail)) {
-    return detail.map(d => `${d.loc.join('.')}: ${d.msg}`).join(' | ');
+  const data = error.response?.data;
+  if (!data) return error.message || fallback;
+  
+  const detail = data.detail;
+  if (detail) {
+    if (typeof detail === 'string') return detail;
+    if (Array.isArray(detail)) {
+      return detail.map(d => `${d.loc ? d.loc.join('.') : 'msg'}: ${d.msg}`).join(' | ');
+    }
+    return JSON.stringify(detail);
   }
-  return JSON.stringify(detail);
+
+  // If there's an 'error' field but no 'detail'
+  if (data.error) return typeof data.error === 'string' ? data.error : JSON.stringify(data.error);
+
+  return JSON.stringify(data);
 };
 
 const summarizePaper = async (text) => {

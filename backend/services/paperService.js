@@ -25,7 +25,7 @@ const createPaper = async (data) => {
     if (authorsString) {
       // Split authors string by comma and trim
       const authorNames = authorsString.split(',').map(a => a.trim()).filter(a => a);
-      
+
       for (let i = 0; i < authorNames.length; i++) {
         let author = await tx.author.findFirst({
           where: { name: authorNames[i] }
@@ -59,7 +59,7 @@ const createPaper = async (data) => {
 
     // Auto-index if abstract is present
     if (abstract) {
-      autoIndexPaper(paper.id, abstract).catch(err => 
+      autoIndexPaper(paper.id, abstract).catch(err =>
         console.error(`Auto-indexing failed for paper ${paper.id}:`, err.message)
       );
     }
@@ -97,6 +97,9 @@ const getPapers = async () => {
     include: {
       authors: {
         include: { author: true }
+      },
+      tags: {
+        include: { tag: true }
       }
     }
   });
@@ -144,6 +147,9 @@ const searchPapers = async (query, filters = {}) => {
     include: {
       authors: {
         include: { author: true }
+      },
+      tags: {
+        include: { tag: true }
       }
     },
     orderBy: { createdAt: "desc" }
@@ -162,8 +168,14 @@ const searchExternalPapers = async (query) => {
 
     return response.data.data;
   } catch (error) {
-    console.error("External search error:", error.message);
-    throw new Error("Failed to fetch papers from external API");
+    console.error("External search error:", error.response?.data || error.message);
+
+    if (error.response?.status === 429) {
+      throw new Error("Please wait a moment and try again.");
+    }
+
+    const apiError = error.response?.data?.message || error.response?.data?.error;
+    throw new Error(apiError ? `API Error: ${apiError}` : "Failed to fetch papers from external API. Please check your connection.");
   }
 };
 
@@ -187,7 +199,7 @@ const savePaperFromExternal = async (externalData) => {
     if (authors && authors.length > 0) {
       for (let i = 0; i < authors.length; i++) {
         const authorData = authors[i];
-        
+
         // Find or create author by name (imperfect but common for hackathons)
         let author = await tx.author.findFirst({
           where: { name: authorData.name }
@@ -221,8 +233,8 @@ const savePaperFromExternal = async (externalData) => {
 
     // Auto-index if abstract is present
     if (abstract) {
-      autoIndexPaper(paper.id, abstract).catch(err => 
-        console.error(`Auto-indexing failed for external paper ${paper.id}:`, err.message)
+      autoIndexPaper(paper.id, abstract).catch(err =>
+        console.error(`Auto-indexing failed for paper ${paper.id}:`, err.message)
       );
     }
 
@@ -232,11 +244,51 @@ const savePaperFromExternal = async (externalData) => {
   return result;
 };
 
+const deletePaper = async (id) => {
+  return prisma.$transaction(async (tx) => {
+    // Delete related records that reference this paper
+    await tx.paperAuthor.deleteMany({ where: { paperId: id } });
+    await tx.paperTag.deleteMany({ where: { paperId: id } });
+    await tx.paperNote.deleteMany({ where: { paperId: id } });
+    await tx.collectionPaper.deleteMany({ where: { paperId: id } });
+    await tx.insight.deleteMany({ where: { paperId: id } });
+    await tx.paperContent.deleteMany({ where: { paperId: id } });
+    
+    // Get session IDs first to ensure reliable message deletion
+    const sessions = await tx.aIChatSession.findMany({
+      where: { paperId: id },
+      select: { id: true }
+    });
+    const sessionIds = sessions.map(s => s.id);
+
+    if (sessionIds.length > 0) {
+      await tx.aIChatMessage.deleteMany({
+        where: { sessionId: { in: sessionIds } }
+      });
+    }
+    await tx.aIChatSession.deleteMany({ where: { paperId: id } });
+
+
+    await tx.entityLink.deleteMany({
+      where: {
+        OR: [
+          { sourceType: 'PAPER', sourceId: id },
+          { targetType: 'PAPER', targetId: id }
+        ]
+      }
+    });
+
+    // Delete the paper itself
+    return tx.paper.delete({ where: { id } });
+  });
+};
+
 module.exports = {
   createPaper,
   getPapers,
   getPaperById,
   searchPapers,
   searchExternalPapers,
-  savePaperFromExternal
+  savePaperFromExternal,
+  deletePaper
 };

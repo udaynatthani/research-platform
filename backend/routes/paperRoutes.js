@@ -4,6 +4,9 @@ const router = express.Router();
 
 const paperController = require("../controllers/paperController");
 
+// Deletion Route
+router.delete("/:id", authenticate, paperController.deletePaper);
+
 // General Routes
 router.get("/", authenticate, paperController.getPapers);
 router.get("/search", authenticate, paperController.searchPapers);

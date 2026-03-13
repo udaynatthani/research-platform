@@ -15,6 +15,15 @@ app.include_router(insight_router, prefix="/ai")
 app.include_router(paper_chat_router, prefix="/ai")
 app.include_router(plagiarism_router, prefix="/ai")
 app.include_router(recommendation_router, prefix="/ai")
+@app.on_event("startup")
+def warmup_models():
+    """Load models on startup to prevent cold-start latency."""
+    from app.models.model_registry import ModelRegistry
+    print("AI Engine: Warming up models...")
+    ModelRegistry.get_summarizer()
+    ModelRegistry.get_insight_model()
+    print("AI Engine: Models loaded and ready.")
 @app.get("/")
+
 def health_check():
     return {"status": "AI engine running"}

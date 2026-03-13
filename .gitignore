@@ -24,3 +24,6 @@ Thumbs.db
 
 # Uploads
 uploads/
+ai-module/storage/index.faiss
+ai-module/storage/metadata.pkl
+ai-module/storage/index.faiss

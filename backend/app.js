@@ -27,6 +27,7 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(activityLogger);
 
 
 app.use("/users", userRoutes);
@@ -47,13 +48,10 @@ app.use("/tags", tagRoutes);
 app.use("/ai", aiRoutes);
 app.use("/activity", activityRoutes);
 app.use("/search", searchRoutes);
-app.use("/files", fileRoutes); // Added
+app.use("/files", fileRoutes);
 
 // Serve uploads folder statically in development
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-
-// Apply activity logger to all mutation routes
-app.use(activityLogger);
 
 
 // Global error handler

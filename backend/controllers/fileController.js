@@ -1,5 +1,6 @@
 const fileService = require("../services/fileService");
 const path = require("path");
+const fs = require("fs");
 
 const uploadFile = async (req, res) => {
   try {
@@ -10,8 +11,6 @@ const uploadFile = async (req, res) => {
     const { projectId, entityType, entityId, notes } = req.body;
     const userId = req.user.userId;
 
-    // Additional size check based on your custom requirements if Multer didn't catch it
-    // (Though Multer limits are already set, we can be more specific here)
     const sizeInMB = req.file.size / (1024 * 1024);
     const mimetype = req.file.mimetype;
 
@@ -30,11 +29,12 @@ const uploadFile = async (req, res) => {
       mimeType: req.file.mimetype,
       fileSize: req.file.size,
       storagePath: req.file.path,
-      entityType: entityType || "PROJECT", // Default to PROJECT if not specified
+      url: `/${req.file.path.replace(/\\/g, '/')}`,
+      entityType: entityType || "PROJECT",
       entityId: entityId || null,
       metadata: {
         notes: notes || "",
-        uploadDate: new Array().toString()
+        uploadDate: new Date().toISOString()
       }
     };
 
@@ -60,7 +60,54 @@ const getFilesByEntity = async (req, res) => {
   }
 };
 
+const getFileById = async (req, res) => {
+  try {
+    const file = await fileService.getFileById(req.params.id);
+    if (!file) return res.status(404).json({ error: "File not found" });
+    res.json(file);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const downloadFile = async (req, res) => {
+  try {
+    const file = await fileService.getFileById(req.params.id);
+    if (!file) return res.status(404).json({ error: "File not found" });
+    
+    const filePath = path.resolve(file.storagePath);
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: "Physical file not found" });
+    }
+    res.download(filePath, file.originalName);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const deleteFile = async (req, res) => {
+  try {
+    const file = await fileService.getFileById(req.params.id);
+    if (!file) return res.status(404).json({ error: "File not found" });
+    
+    // Delete physical file
+    const filePath = path.resolve(file.storagePath);
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+    
+    await fileService.deleteFileRecord(req.params.id);
+    res.json({ message: "File deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   uploadFile,
-  getFilesByEntity
+  getFilesByEntity,
+  getFileById,
+  downloadFile,
+  deleteFile
 };
+

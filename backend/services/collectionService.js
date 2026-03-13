@@ -83,12 +83,10 @@ const removePaperFromCollection = async (collectionId, paperId, userId) => {
 
   if (!collection) throw new Error("Collection not found or unauthorized");
 
-  return prisma.collectionPaper.delete({
+  return prisma.collectionPaper.deleteMany({
     where: {
-      collectionId_paperId: {
-        collectionId,
-        paperId
-      }
+      collectionId,
+      paperId
     }
   });
 };
