@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Research Platform — Architecture Diagrams</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #0b0f1a;
+            --surface: #111827;
+            --surface2: #1a2235;
+            --border: rgba(255, 255, 255, 0.08);
+            --purple: #7c6ff7;
+            --purple-light: #a89cf8;
+            --teal: #2dd4b0;
+            --amber: #f9a825;
+            --coral: #f26950;
+            --green: #4ade80;
+            --gray: #94a3b8;
+            --text: #e8edf5;
+            --text-muted: #8896aa;
+            --text-dim: #4a5568;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Outfit', sans-serif;
+            font-weight: 400;
+            min-height: 100vh;
+            padding: 48px 32px;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 64px;
+        }
+
+        .page-header .eyebrow {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--purple-light);
+            margin-bottom: 16px;
+        }
+
+        .page-header h1 {
+            font-family: 'DM Serif Display', serif;
+            font-size: clamp(28px, 4vw, 44px);
+            font-weight: 400;
+            color: var(--text);
+            line-height: 1.2;
+            margin-bottom: 12px;
+        }
+
+        .page-header p {
+            font-size: 15px;
+            color: var(--text-muted);
+        }
+
+        .diagrams-grid {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 40px;
+        }
+
+        .diagram-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+
+        .diagram-card-header {
+            padding: 20px 28px 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .diagram-num {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            color: var(--purple-light);
+            background: rgba(124, 111, 247, 0.12);
+            border: 1px solid rgba(124, 111, 247, 0.25);
+            border-radius: 6px;
+            padding: 3px 8px;
+            letter-spacing: 0.1em;
+        }
+
+        .diagram-card-header h2 {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .diagram-card-header p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .diagram-body {
+            padding: 32px 24px;
+            background: var(--surface2);
+        }
+
+        svg text {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        /* ── shared node styles ── */
+        .node-purple rect {
+            fill: #1e1a4a;
+            stroke: #7c6ff7;
+            stroke-width: 1;
+        }
+
+        .node-purple .label {
+            fill: #c4bcff;
+            font-weight: 500;
+        }
+
+        .node-purple .sub {
+            fill: #7c6ff7;
+        }
+
+        .node-teal rect {
+            fill: #0d2e28;
+            stroke: #2dd4b0;
+            stroke-width: 1;
+        }
+
+        .node-teal .label {
+            fill: #a7f3e0;
+            font-weight: 500;
+        }
+
+        .node-teal .sub {
+            fill: #2dd4b0;
+        }
+
+        .node-amber rect {
+            fill: #2c1f04;
+            stroke: #f9a825;
+            stroke-width: 1;
+        }
+
+        .node-amber .label {
+            fill: #fde68a;
+            font-weight: 500;
+        }
+
+        .node-amber .sub {
+            fill: #f9a825;
+        }
+
+        .node-coral rect {
+            fill: #2e120a;
+            stroke: #f26950;
+            stroke-width: 1;
+        }
+
+        .node-coral .label {
+            fill: #fca98e;
+            font-weight: 500;
+        }
+
+        .node-coral .sub {
+            fill: #f26950;
+        }
+
+        .node-green rect {
+            fill: #0d2a18;
+            stroke: #4ade80;
+            stroke-width: 1;
+        }
+
+        .node-green .label {
+            fill: #bbf7d0;
+            font-weight: 500;
+        }
+
+        .node-green .sub {
+            fill: #4ade80;
+        }
+
+        .node-gray rect {
+            fill: #1a2235;
+            stroke: #4a5568;
+            stroke-width: 1;
+        }
+
+        .node-gray .label {
+            fill: #94a3b8;
+            font-weight: 500;
+        }
+
+        .node-gray .sub {
+            fill: #64748b;
+        }
+
+        .arr {
+            stroke: #4a5568;
+            stroke-width: 1.5;
+            fill: none;
+        }
+
+        .arr-dashed {
+            stroke: #4a5568;
+            stroke-width: 1;
+            fill: none;
+            stroke-dasharray: 5 4;
+        }
+
+        .arr-red {
+            stroke: #f26950;
+            stroke-width: 1;
+            fill: none;
+            stroke-dasharray: 5 4;
+        }
+
+        .title-text {
+            fill: #e8edf5;
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .label-text {
+            fill: #c4bcff;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .sub-text {
+            fill: #8896aa;
+            font-size: 11px;
+        }
+
+        .rel-text {
+            fill: #64748b;
+            font-size: 11px;
+            font-style: italic;
+        }
+
+        .key-title {
+            fill: #e8edf5;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .key-sub {
+            fill: #8896aa;
+            font-size: 11px;
+        }
+
+        .danger-text {
+            fill: #f26950;
+            font-size: 11px;
+            font-style: italic;
+        }
+
+        .sep {
+            stroke: rgba(255, 255, 255, 0.07);
+            stroke-width: 1;
+        }
+
+        .insight-box rect {
+            fill: rgba(255, 255, 255, 0.03);
+            stroke: rgba(255, 255, 255, 0.1);
+        }
+
+        @media print {
+            body {
+                background: #fff;
+                color: #000;
+                padding: 20px;
+            }
+
+            .diagram-card {
+                border: 1px solid #ddd;
+                background: #fff;
+                margin-bottom: 40px;
+            }
+
+            .diagram-body {
+                background: #f9f9f9;
+            }
+
+            .page-header h1 {
+                color: #000;
+            }
+
+            .page-header p,
+            .diagram-card-header p {
+                color: #555;
+            }
+
+            .diagram-num {
+                background: #eee;
+                border-color: #999;
+                color: #333;
+            }
+
+            .diagram-card-header h2 {
+                color: #000;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="page-header">
+        <div class="eyebrow">Architecture Documentation</div>
+        <h1>Research Platform — System Diagrams</h1>
+        <p>Four diagrams covering the full system: layers, AI pipeline, RAG flow, and knowledge graph</p>
+    </div>
+
+    <div class="diagrams-grid">
+
+        <!-- DIAGRAM 1 -->
+        <div class="diagram-card">
+            <div class="diagram-card-header">
+                <div>
+                    <div class="diagram-num">01</div>
+                </div>
+                <div>
+                    <h2>System Architecture — Three-Layer Overview</h2>
+                    <p>Frontend → Backend → AI Engine with technology stack</p>
+                </div>
+            </div>
+            <div class="diagram-body">
+                <svg width="100%" viewBox="0 0 900 280" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <marker id="a1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6"
+                            orient="auto-start-reverse">
+                            <path d="M2 1L8 5L2 9" fill="none" stroke="#4a5568" stroke-width="1.5"
+                                stroke-linecap="round" stroke-linejoin="round" />
+                        </marker>
+                    </defs>
+
+                    <!-- Frontend -->
+                    <g class="node-purple">
+                        <rect x="60" y="80" width="220" height="100" rx="10" />
+                        <text class="label-text" x="170" y="122" text-anchor="middle"
+                            dominant-baseline="central">Frontend</text>
+                        <text class="sub-text" x="170" y="148" text-anchor="middle" dominant-baseline="central">Visual
+                            workflows &amp; knowledge graphs</text>
+                    </g>
+
+                    <!-- Arrow -->
+                    <line x1="280" y1="130" x2="348" y2="130" class="arr" marker-end="url(#a1)" />
+                    <text class="rel-text" x="314" y="122" text-anchor="middle">REST</text>
+
+                    <!-- Backend -->
+                    <g class="node-teal">
+                        <rect x="350" y="80" width="220" height="100" rx="10" />
+                        <text class="label-text" x="460" y="122" text-anchor="middle" dominant-baseline="central"
+                            style="fill:#a7f3e0">Backend</text>
+                        <text class="sub-text" x="460" y="148" text-anchor="middle" dominant-baseline="central">Users,
+                            projects, papers, workflows</text>
+                    </g>
+
+                    <!-- Arrow -->
+                    <line x1="570" y1="130" x2="638" y2="130" class="arr" marker-end="url(#a1)" />
+                    <text class="rel-text" x="604" y="122" text-anchor="middle">HTTP</text>
+
+                    <!-- AI Engine -->
+                    <g class="node-amber">
+                        <rect x="640" y="80" width="220" height="100" rx="10" />
+                        <text class="label-text" x="750" y="122" text-anchor="middle" dominant-baseline="central"
+                            style="fill:#fde68a">AI Engine</text>
+                        <text class="sub-text" x="750" y="148" text-anchor="middle"
+                            dominant-baseline="central">Analytical brain for insights</text>
+                    </g>
+
+                    <!-- Tech labels -->
+                    <text class="sub-text" x="170" y="210" text-anchor="middle">React / Visual layer</text>
+                    <text class="sub-text" x="460" y="210" text-anchor="middle">Node.js (REST API)</text>
+                    <text class="sub-text" x="750" y="210" text-anchor="middle">Python / FastAPI</text>
+
+                    <!-- Vertical separators -->
+                    <line x1="325" y1="60" x2="325" y2="240" class="sep" stroke-dasharray="4 4" />
+                    <line x1="615" y1="60" x2="615" y2="240" class="sep" stroke-dasharray="4 4" />
+
+                    <!-- Title -->
+                    <text class="title-text" x="460" y="40" text-anchor="middle">Three-layer system architecture</text>
+                </svg>
+            </div>
+        </div>
+
+        <!-- DIAGRAM 2 -->
+        <div class="diagram-card">
+            <div class="diagram-card-header">
+                <div>
+                    <div class="diagram-num">02</div>
+                </div>
+                <div>
+                    <h2>AI Intelligence Pipeline — Four Stages</h2>
+                    <p>Ingestion → Understanding → Retrieval → Reasoning, with models</p>
+                </div>
+            </div>
+            <div class="diagram-body">
+                <svg width="100%" viewBox="0 0 900 400" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <marker id="a2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6"
+                            orient="auto-start-reverse">
+                            <path d="M2 1L8 5L2 9" fill="none" stroke="#4a5568" stroke-width="1.5"
+                                stroke-linecap="round" stroke-linejoin="round" />
+                        </marker>
+                    </defs>
+
+                    <text class="title-text" x="450" y="38" text-anchor="middle">AI intelligence pipeline — four
+                        stages</text>
+
+                    <!-- Stage 1: Ingestion -->
+                    <g class="node-purple">
+                        <rect x="40" y="60" width="175" height="100" rx="10" />
+                        <text class="sub-text" x="52" y="78" style="fill:#7c6ff7;font-family:'DM Mono',monospace">①
+                            Ingestion</text>
+                        <text class="label-text" x="127" y="112" text-anchor="middle" dominant-baseline="central"
+                            style="fill:#c4bcff">Ingestion</text>
+                        <text class="sub-text" x="127" y="134" text-anchor="middle">Extract &amp; chunk text</text>
+                    </g>
+                    <line x1="215" y1="110" x2="253" y2="110" class="arr" marker-end="url(#a2)" />
+
+                    <!-- Stage 2: Understanding -->
+                    <g class="node-teal">
+                        <rect x="255" y="60" width="175" height="100" rx="10" />
+                        <text class="sub-text" x="267" y="78" style="fill:#2dd4b0;font-family:'DM Mono',monospace">②
+                            Understanding</text>
+                        <text class="label-text" x="342" y="112" text-anchor="middle" dominant-baseline="central"
+                            style="fill:#a7f3e0">Understanding</text>
+                        <text class="sub-text" x="342" y="134" text-anchor="middle">MiniLM → 384-dim vectors</text>
+                    </g>
+                    <line x1="430" y1="110" x2="468" y2="110" class="arr" marker-end="url(#a2)" />
+
+                    <!-- Stage 3: Retrieval -->
+                    <g class="node-amber">
+                        <rect x="470" y="60" width="175" height="100" rx="10" />
+                        <text class="sub-text" x="482" y="78" style="fill:#f9a825;font-family:'DM Mono',monospace">③
+                            Retrieval</text>
+                        <text class="label-text" x="557" y="112" text-anchor="middle" dominant-baseline="central"
+                            style="fill:#fde68a">Retrieval</text>
+                        <text class="sub-text" x="557" y="134" text-anchor="middle">FAISS vector similarity
+                            search</text>
+                    </g>
+                    <line x1="645" y1="110" x2="683" y2="110" class="arr" marker-end="url(#a2)" />
+
+                    <!-- Stage 4: Reasoning -->
+                    <g class="node-coral">
+                        <rect x="685" y="60" width="175" height="100" rx="10" />
+                        <text class="sub-text" x="697" y="78" style="fill:#f26950;font-family:'DM Mono',monospace">④
+                            Reasoning</text>
+                        <text class="label-text" x="772" y="112" text-anchor="middle" dominant-baseline="central"
+                            style="fill:#fca98e">Reasoning</text>
+                        <text class="sub-text" x="772" y="134" text-anchor="middle">FLAN-T5 + RAG answers</text>
+                    </g>
+
+                    <!-- Divider -->
+                    <line x1="40" y1="196" x2="860" y2="196" class="sep" />
+                    <text class="sub-text" x="450" y="218" text-anchor="middle">AI models used per stage</text>
+
+                    <!-- Model: MiniLM -->
+                    <g class="node-gray">
+                        <rect x="40" y="236" width="240" height="60" rx="10" />
+                        <text class="label-text" x="160" y="258" text-anchor="middle" dominant-baseline="central"
+                            style="fill:#94a3b8">all-MiniLM-L6-v2</text>
+                        <text class="sub-text" x="160" y="278" text-anchor="middle">Text embeddings</text>
+                    </g>
+
+                    <!-- Model: DistilBART -->
+                    <g class="node-gray">
+                        <rect x="330" y="236" width="240" height="60" rx="10" />
+                        <text class="label-text" x="450" y="258" text-anchor="middle" dominant-baseline="central"
+                            style="fill:#94a3b8">DistilBART</text>
+                        <text class="sub-text" x="450" y="278" text-anchor="middle">Summarization</text>
+                    </g>
+
+                    <!-- Model: FLAN-T5 -->
+                    <g class="node-gray">
+                        <rect x="620" y="236" width="240" height="60" rx="10" />
+                        <text class="label-text" x="740" y="258" text-anchor="middle" dominant-baseline="central"
+                            style="fill:#94a3b8">FLAN-T5</text>
+                        <text class="sub-text" x="740" y="278" text-anchor="middle">Question answering &amp;
+                            reasoning</text>
+                    </g>
+
+                    <!-- Key insight -->
+                    <rect x="40" y="326" width="820" height="50" rx="10" fill="rgba(124,111,247,0.06)"
+                        stroke="rgba(124,111,247,0.2)" stroke-width="1" />
+                    <text class="key-title" x="450" y="346" text-anchor="middle" dominant-baseline="central">Modular
+                        pipeline</text>
+                    <text class="key-sub" x="450" y="364" text-anchor="middle" dominant-baseline="central">Each model is
+                        optimised for a specific task — scale or swap any layer independently</text>
+                </svg>
+            </div>
+        </div>
+
+        <!-- DIAGRAM 3 -->
+        <div class="diagram-card">
+            <div class="diagram-card-header">
+                <div>
+                    <div class="diagram-num">03</div>
+                </div>
+                <div>
+                    <h2>Retrieval Augmented Generation (RAG)</h2>
+                    <p>Query → embedding → FAISS search → context → grounded answer</p>
+                </div>
+            </div>
+            <div class="diagram-body">
+                <svg width="100%" viewBox="0 0 900 380" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <marker id="a3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6"
+                            orient="auto-start-reverse">
+                            <path d="M2 1L8 5L2 9" fill="none" stroke="#4a5568" stroke-width="1.5"
+                                stroke-linecap="round" stroke-linejoin="round" />
+                        </marker>
+                        <marker id="a3d" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6"
+                            orient="auto-start-reverse">
+                            <path d="M2 1L8 5L2 9" fill="none" stroke="#4a5568" stroke-width="1.5"
+                                stroke-linecap="round" stroke-linejoin="round" />
+                        </marker>
+                    </defs>
+
+                    <text class="title-text" x="450" y="38" text-anchor="middle">Retrieval Augmented Generation
+                        (RAG)</text>
+
+                    <!-- Row 1 -->
+                    <!-- Researcher query -->
+                    <g class="node-purple">
+                        <rect x="40" y="65" width="190" height="70" rx="10" />
+                        <text class="label-text" x="135" y="90" text-anchor="middle" dominant-baseline="central"
+                            style="fill:#c4bcff">Researcher query</text>
+                        <text class="sub-text" x="135" y="112" text-anchor="middle">"What dataset was used?"</text>
+                    </g>
+                    <line x1="230" y1="100" x2="268" y2="100" class="arr" marker-end="url(#a3)" />
+
+                    <!-- Query embedding -->
+                    <g class="node-teal">
+                        <rect x="270" y="65" width="190" height="70" rx="10" />
+                        <text class="label-text" x="365" y="90" text-anchor="middle" dominant-baseline="central"
+                            style="fill:#a7f3e0">Query embedding</text>
+                        <text class="sub-text" x="365" y="112" text-anchor="middle">MiniLM → 384-dim vector</text>
+                    </g>
+                    <line x1="460" y1="100" x2="498" y2="100" class="arr" marker-end="url(#a3)" />
+
+                    <!-- FAISS search -->
+                    <g class="node-amber">
+                        <rect x="500" y="65" width="190" height="70" rx="10" />
+                        <text class="label-text" x="595" y="90" text-anchor="middle" dominant-baseline="central"
+                            style="fill:#fde68a">FAISS search</text>
+                        <text class="sub-text" x="595" y="112" text-anchor="middle">Nearest neighbour lookup</text>
+                    </g>
+
+                    <!-- Vector index -->
+                    <rect x="720" y="65" width="150" height="70" rx="10" fill="rgba(255,255,255,0.03)"
+                        stroke="rgba(255,255,255,0.1)" stroke-width="1" />
+                    <text class="key-title" x="795" y="90" text-anchor="middle" dominant-baseline="central">Vector
+                        index</text>
+                    <text class="key-sub" x="795" y="112" text-anchor="middle">Pre-built from paper chunks</text>
+                    <line x1="720" y1="100" x2="692" y2="100" class="arr-dashed" marker-end="url(#a3d)" />
+
+                    <!-- Arrow down from FAISS -->
+                    <line x1="595" y1="135" x2="595" y2="195" class="arr" marker-end="url(#a3)" />
+
+                    <!-- Row 2 -->
+                    <!-- Top-K chunks -->
+                    <g class="node-amber">
+                        <rect x="500" y="197" width="190" height="70" rx="10" />
+                        <text class="label-text" x="595" y="222" text-anchor="middle" dominant-baseline="central"
+                            style="fill:#fde68a">Top-K chunks</text>
+                        <text class="sub-text" x="595" y="244" text-anchor="middle">Most relevant passages
+                            retrieved</text>
+                    </g>
+                    <line x1="500" y1="232" x2="462" y2="232" class="arr" marker-end="url(#a3)" />
+
+                    <!-- FLAN-T5 -->
+                    <g class="node-coral">
+                        <rect x="270" y="197" width="190" height="70" rx="10" />
+                        <text class="label-text" x="365" y="222" text-anchor="middle" dominant-baseline="central"
+                            style="fill:#fca98e">FLAN-T5 model</text>
+                        <text class="sub-text" x="365" y="244" text-anchor="middle">Generates answer from context</text>
+                    </g>
+                    <line x1="270" y1="232" x2="232" y2="232" class="arr" marker-end="url(#a3)" />
+
+                    <!-- Grounded answer -->
+                    <g class="node-green">
+                        <rect x="40" y="197" width="190" height="70" rx="10" />
+                        <text class="label-text" x="135" y="222" text-anchor="middle" dominant-baseline="central"
+                            style="fill:#bbf7d0">Grounded answer</text>
+                        <text class="sub-text" x="135" y="244" text-anchor="middle">Based on the actual paper</text>
+                    </g>
+
+                    <!-- Key insight box -->
+                    <rect x="40" y="305" width="830" height="54" rx="10" fill="rgba(124,111,247,0.07)"
+                        stroke="rgba(124,111,247,0.25)" stroke-width="1" />
+                    <text class="key-title" x="455" y="326" text-anchor="middle" dominant-baseline="central"
+                        style="fill:#c4bcff">Key insight — the "wow" line</text>
+                    <text class="key-sub" x="455" y="347" text-anchor="middle" dominant-baseline="central">Our AI
+                        doesn't just read papers — it indexes knowledge, retrieves evidence, and reasons over it.</text>
+                </svg>
+            </div>
+        </div>
+
+        <!-- DIAGRAM 4 -->
+        <div class="diagram-card">
+            <div class="diagram-card-header">
+                <div>
+                    <div class="diagram-num">04</div>
+                </div>
+                <div>
+                    <h2>Knowledge Graph — How Ideas Connect</h2>
+                    <p>Papers → hypotheses → experiments → insights, with relationship types</p>
+                </div>
+            </div>
+            <div class="diagram-body">
+                <svg width="100%" viewBox="0 0 900 420" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <marker id="a4" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6"
+                            orient="auto-start-reverse">
+                            <path d="M2 1L8 5L2 9" fill="none" stroke="#4a5568" stroke-width="1.5"
+                                stroke-linecap="round" stroke-linejoin="round" />
+                        </marker>
+                        <marker id="a4r" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6"
+                            orient="auto-start-reverse">
+                            <path d="M2 1L8 5L2 9" fill="none" stroke="#f26950" stroke-width="1.5"
+                                stroke-linecap="round" stroke-linejoin="round" />
+                        </marker>
+                    </defs>
+
+                    <text class="title-text" x="450" y="38" text-anchor="middle">Knowledge graph — how ideas
+                        connect</text>
+
+                    <!-- Research paper (top) -->
+                    <g class="node-gray">
+                        <rect x="330" y="55" width="240" height="65" rx="10" />
+                        <text class="label-text" x="450" y="80" text-anchor="middle" dominant-baseline="central"
+                            style="fill:#94a3b8">Research paper</text>
+                        <text class="sub-text" x="450" y="100" text-anchor="middle">Uploaded &amp; AI-analysed</text>
+                    </g>
+
+                    <!-- Arrows from paper -->
+                    <line x1="390" y1="120" x2="220" y2="190" class="arr" marker-end="url(#a4)" />
+                    <line x1="450" y1="120" x2="450" y2="190" class="arr" marker-end="url(#a4)" />
+                    <line x1="510" y1="120" x2="680" y2="190" class="arr" marker-end="url(#a4)" />
+
+                    <!-- Relationship labels -->
+                    <text class="rel-text" x="276" y="164" text-anchor="middle">leads to</text>
+                    <text class="rel-text" x="624" y="164" text-anchor="middle">derived from</text>
+
+                    <!-- Hypothesis -->
+                    <g class="node-purple">
+                        <rect x="100" y="192" width="200" height="65" rx="10" />
+                        <text class="label-text" x="200" y="217" text-anchor="middle" dominant-baseline="central"
+                            style="fill:#c4bcff">Hypothesis</text>
+                        <text class="sub-text" x="200" y="238" text-anchor="middle">Proposed idea to test</text>
+                    </g>
+
+                    <!-- Research finding -->
+                    <g class="node-teal">
+                        <rect x="350" y="192" width="200" height="65" rx="10" />
+                        <text class="label-text" x="450" y="217" text-anchor="middle" dominant-baseline="central"
+                            style="fill:#a7f3e0">Research finding</text>
+                        <text class="sub-text" x="450" y="238" text-anchor="middle">Validated result</text>
+                    </g>
+
+                    <!-- Research topic -->
+                    <g class="node-coral">
+                        <rect x="600" y="192" width="200" height="65" rx="10" />
+                        <text class="label-text" x="700" y="217" text-anchor="middle" dominant-baseline="central"
+                            style="fill:#fca98e">Research topic</text>
+                        <text class="sub-text" x="700" y="238" text-anchor="middle">Domain / field</text>
+                    </g>
+
+                    <!-- Arrows row 2 → row 3 -->
+                    <line x1="200" y1="257" x2="200" y2="327" class="arr" marker-end="url(#a4)" />
+                    <text class="rel-text" x="162" y="296" text-anchor="middle">supports</text>
+
+                    <line x1="450" y1="257" x2="450" y2="327" class="arr" marker-end="url(#a4)" />
+                    <text class="rel-text" x="488" y="296" text-anchor="middle">leads to</text>
+
+                    <!-- Contradicts arc -->
+                    <path d="M600 224 Q570 290 600 325" fill="none" stroke="#f26950" stroke-width="1"
+                        stroke-dasharray="5 4" marker-end="url(#a4r)" />
+                    <text class="danger-text" x="546" y="286" text-anchor="end">contradicts</text>
+
+                    <!-- Experiment -->
+                    <g class="node-amber">
+                        <rect x="100" y="329" width="200" height="65" rx="10" />
+                        <text class="label-text" x="200" y="354" text-anchor="middle" dominant-baseline="central"
+                            style="fill:#fde68a">Experiment</text>
+                        <text class="sub-text" x="200" y="375" text-anchor="middle">Tested &amp; observed</text>
+                    </g>
+
+                    <!-- Insight -->
+                    <g class="node-green">
+                        <rect x="350" y="329" width="200" height="65" rx="10" />
+                        <text class="label-text" x="450" y="354" text-anchor="middle" dominant-baseline="central"
+                            style="fill:#bbf7d0">Insight</text>
+                        <text class="sub-text" x="450" y="375" text-anchor="middle">Actionable knowledge</text>
+                    </g>
+
+                    <!-- Legend -->
+                    <rect x="620" y="329" width="240" height="65" rx="10" fill="rgba(255,255,255,0.03)"
+                        stroke="rgba(255,255,255,0.08)" stroke-width="1" />
+                    <text class="key-title" x="740" y="352" text-anchor="middle">Relationship types</text>
+                    <text class="key-sub" x="740" y="370" text-anchor="middle">supports · contradicts</text>
+                    <text class="key-sub" x="740" y="386" text-anchor="middle">derived from · leads to</text>
+                </svg>
+            </div>
+        </div>
+
+    </div>
+
+    <div style="text-align:center;margin-top:48px;padding-top:32px;border-top:1px solid rgba(255,255,255,0.06)">
+        <p style="font-family:'DM Mono',monospace;font-size:11px;color:#4a5568;letter-spacing:0.15em">RESEARCH PLATFORM
+            — ARCHITECTURE DIAGRAMS</p>
+    </div>
+
+</body>
+
+</html>
