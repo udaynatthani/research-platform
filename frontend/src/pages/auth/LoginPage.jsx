@@ -33,7 +33,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="w-14 h-14 rounded-2xl bg-indigo-600 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-indigo-200">
-            <span className="text-white font-display font-bold text-2xl">R</span>
+            <span className="text-white font-display font-bold text-2xl">S</span>
           </div>
           <h1 className="font-display font-bold text-3xl text-slate-900">Synara</h1>
           <p className="text-slate-500 text-sm mt-1">Sign in to your workspace</p>

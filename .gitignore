@@ -1,29 +1,37 @@
 # Node
 node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+npm-debug.log
+.env
 
 # Python
-venv/
-.venv/
 __pycache__/
-*.py[cod]
-*$py.class
+*.pyc
+*.pyo
+*.pyd
+*.so
+.venv/
+venv/
+env/
 
-# Env
-.env*
+# Huggingface / transformers
+.cache/
+huggingface/
+models/
 
-# IDE
-.idea/
-.vscode/
+# FAISS indexes
+*.index
+*.faiss
+
+# Logs
+logs/
+*.log
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Uploads
-uploads/
-ai-module/storage/index.faiss
-ai-module/storage/metadata.pkl
-ai-module/storage/index.faiss
+# build
+dist/
+build/
+*.pdf
+*.md

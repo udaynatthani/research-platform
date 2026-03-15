@@ -25,7 +25,7 @@ export default function Sidebar() {
     <aside className="group fixed left-0 top-0 h-full w-16 hover:w-56 bg-white border-r border-slate-100 z-20 flex flex-col overflow-hidden transition-all duration-200 ease-in-out shadow-sm">
       <div className="flex items-center gap-3 px-4 py-5 border-b border-slate-100 shrink-0 overflow-hidden">
         <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center shrink-0">
-          <span className="text-white font-display font-bold text-sm">R</span>
+          <span className="text-white font-display font-bold text-sm">S</span>
         </div>
         <span className="font-display font-bold text-slate-800 text-base whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150">Synara</span>
       </div>
